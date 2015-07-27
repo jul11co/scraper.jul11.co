@@ -1,2 +1,2 @@
-# scaper.jul11.co
+# scraper.jul11.co
 Using NodeJS, Cheerio &amp; EJS to create scraper service

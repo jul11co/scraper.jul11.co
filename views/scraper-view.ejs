@@ -692,6 +692,7 @@ function compressCss(css_content) {
       if (link && link != '') {
         $('#sc-scrape-async-loading').removeClass('hidden');
         $('#sc-main-content').addClass('hidden');
+        switchTab('results');
         scrapeLinkAjax(link, function(err, result) {
           $('#sc-scrape-async-loading').addClass('hidden');
           $('#sc-main-content').removeClass('hidden');
@@ -702,7 +703,7 @@ function compressCss(css_content) {
                 '/scraper?link=' + encodeURIComponent(result.page.url));
               $('#sc-scrape-json').attr('href', '/scrape?link=' + encodeURIComponent(result.page.url));
               $('#sc-input-link').val(result.page.url);
-
+              // Page info
               $('#sc-page-title').html(result.page.title);
               $('#sc-page-title').attr('href', result.page.url);
               $('#sc-page-description').html(shortenDescriptionIfNecessary(result.page.description,800));
@@ -710,12 +711,16 @@ function compressCss(css_content) {
               $('#sc-page-image').attr('src', result.page.image);
               $('#sc-page-url').html(getLinkText(result.page.url,80));
               $('#sc-page-url').attr('href', result.page.url);
-
+              // Page content
               $('#sc-page-content').html(result.page.html);
               $('#sc-page-css').html(result.page.css);
             }
             if (result.job) {
               $('#sc-scrape-job').attr('data-job-id', result.job.id);
+              if (result.job.url_matches.length == 0 && result.page) {
+                var hostname = getLinkHostname(result.page.url);
+                if (hostname != '') result.job.url_matches.push(hostname);
+              }
               matchEditor.getDoc().setValue(result.job.url_matches.join('\n'));
               scriptEditor.getDoc().setValue(result.job.script);
               templateEditor.getDoc().setValue(result.job.template);
@@ -726,7 +731,6 @@ function compressCss(css_content) {
         });
       }
     });
-
   }
   $(function() {
     bindButtons();

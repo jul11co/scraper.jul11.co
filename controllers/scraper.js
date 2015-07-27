@@ -24,7 +24,10 @@ exports.showScraperPage = function(req, res) {
       user: req.user
     });
   }
-  scrapeInternal({ url: req.query.link }, function(err, result) {
+  scrapeInternal({ 
+    url: req.query.link,
+    override_url: '/scraper?link='
+  }, function(err, result) {
     if(err){
       console.log(err);
       return res.render('scraper-view.ejs', {
@@ -185,14 +188,14 @@ function scrapeInternal(options, callback) {
             // append job script & template to template
             template += job.script;
             if (job.template == '') {
-              job.template = '<%=page.html%>';
+              job.template = '<%-page.html%>';
             }
             template += job.template;
           } else {
             if (!options.no_default || options.no_default !== 'yes') {
               template += '<%postProcess();%>';
             }
-            template += '<%=page.html%>';
+            template += '<%-page.html%>';
           }
 
           // console.log('Template:');
@@ -202,6 +205,7 @@ function scrapeInternal(options, callback) {
           try {
             resultHtml = ejs.render(template, {
               page: page,
+              job: job,
               $: $,
               cheerio: cheerio,
               urlutil: urlutil,

@@ -1,0 +1,54 @@
+<%
+if (urlMatch('venturebeat.com')) {
+
+  setScriptFile('venturebeat_com.ejs');
+
+  removeSelector('.post-label');
+  removeSelector('.channel-label');
+  removeSelector('.comments_share');
+  removeSelector('#profile-cards-header');
+  removeSelector('#profile-cards');
+  removeSelector('#profiles-powered-by');
+
+  removeSelector('.post-boilerplate');
+
+  $('img').each(function() {
+    $(this).removeAttr('width');
+    $(this).removeAttr('height');
+    if ($(this).attr('data-src')) {
+      var data_src = $(this).attr('data-src');
+      $(this).attr('src', data_src);
+    }
+  });
+
+  removeInlineScripts('#content');
+  normalizeLinks('#content');
+
+  addCss('' +
+  '.tag-list a {' +
+    'background: #4479BD;' +
+    'color: #fff;' +
+    'display: inline-block;' +
+    'padding: 2px 12px;' +
+    'margin-right: 10px;' +
+    'margin-bottom: 10px;' +
+  '}' +
+  '.tag-list h3 {' +
+    'font-weight: 400;' +
+    'font-size: 1.125em;' +
+  '}' +
+  '.post-content {' +
+    'font-size: 16px;' +
+  '}' +
+  '.post-content p {' +
+    'margin-bottom: 0;' +
+  '}' +
+  '.post-content hr {' +
+    'margin-top: 0;' +
+    'margin-bottom: 0;' +
+  '}'
+  );
+
+  setHtml($('#content').html());
+}
+%>

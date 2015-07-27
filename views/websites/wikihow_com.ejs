@@ -1,0 +1,198 @@
+<%
+if (urlMatch('wikihow.com')) {
+
+  setScriptFile('wikihow_com.ejs');
+
+  $('img').each(function() {
+    var data_src = $(this).attr('data-src');
+    if (data_src) {
+      $(this).attr('src', data_src);
+    }
+    $(this).removeAttr('width');
+    $(this).removeAttr('height');
+  });
+
+  removeSelector('.editsection');
+
+  removeSelector('.ad_label');
+  removeSelector('.wh_ad_inner');
+
+  removeSelector('.section.knowledgebox_section');
+  removeSelector('.section.kbedit_section');
+  removeSelector('.section.video.sticky');
+  removeSelector('.section.relatedwikihows');
+
+  removeSelector('#article_rating');
+  removeSelector('#end_options');
+
+  removeSelector('.page_stats');
+
+  removeInlineScripts('div#article');
+  normalizeLinks('div#article');
+
+  addCss('' +
+  '#bodycontents {' +
+    'max-width: 725px;' +
+  '}' +
+  '#intro, .wh_block {' +
+    'padding: 27px;' +
+    'margin-bottom: 25px;' +
+    'word-wrap: break-word;' +
+    'background-color: #fff;' +
+  '}' +
+  '#article ol.steps_list_2 {' +
+    'padding: 0 0 16px 0;' +
+  '}' +
+  '.altblock {' +
+    'height: 18px;' +
+    'width: 18px;' +
+    'background-color: #93b874;' +
+    'float: left;' +
+    'margin-right: 8px;' +
+  '}'
+  );
+
+  addCss('' +
+  '#method_toc {' +
+    'line-height: 15px;' +
+    'margin-bottom: 5px;' +
+    'font-size: 12px;' +
+    'font-weight: bold;' +
+    'line-height: 1.65em;' +
+    'color: #222;' +
+    'border-top: 1px solid #CCC;' +
+    'border-bottom: 1px solid #CCC;' +
+    'padding: 5px 0;' +
+  '}' +
+  '#method_toc.sp_method_toc {' +
+    'margin: 3px -27px;' +
+    'border: 0 27px;' +
+    'padding: 10px 27px 10px 27px;' +
+    'border: 0;' +
+    'color: #222;' +
+    'font-size: 12px;' +
+    'font-weight: bold;' +
+    'line-height: 1.65em;' +
+  '}' +
+  '#method_toc span {' +
+    'margin-right: .75em;' +
+  '}' +
+  '#method_toc a {' +
+    'margin-right: 10px;' +
+    'background-image: url(data:image/gif;base64,R0lGODlhCgAKAIAAAJa6eQAAACH/C1hNUCBEYXRhWE1QPD94cGFja…cWFRQTEhEQDw4NDAsKCQgHBgUEAwIBAAAh+QQAAAAAACwAAAAACgAKAAACCISPqcvtD2MrADs=);' +
+    'background-repeat: no-repeat;' +
+    'background-position: 0px 4px;' +
+    'background-position-x: left;' +
+    'padding-left: 15px;' +
+    'display: inline-block;' +
+  '}'
+  );
+
+  addCss('' +
+  '.section {' +
+    'padding: 5px 27px 27px 27px;' +
+    'border-radius: 4px;' +
+    '-moz-border-radius: 4px;' +
+    '-webkit-border-radius: 4px;' +
+    'margin-bottom: 25px;' +
+    'position: relative;' +
+    'line-height: 25px;' +
+  '}' +
+  '.section h3 {' +
+    'width: 100%;' +
+    'font-size: 20px;' +
+    'font-weight: bold;' +
+    'color: #222;' +
+    'position: absolute;' +
+    'z-index: 3;' +
+    'left: 0;' +
+    'top: 0px;' +
+    'line-height: 29px;' +
+    'border-radius: 4px;' +
+    '-moz-border-radius: 4px;' +
+    '-webkit-border-radius: 4px;' +
+  '}' +
+  '.section .altblock {' +
+    'margin: 21px 8px 0 25px;' +
+  '}' +
+  '.section h3 span,' +
+  '.section h4 span {' +
+    'display: block;' +
+    'margin-left: 0px;' +
+    'padding: 16px 0px 15px 50px;' +
+  '}' +
+  '.section ul,' +
+  '.section ol {' +
+    'padding: 5px 5px 20px 0;' +
+  '}' +
+  '.section.steps.sticky {' +
+    'padding-top: 60px;' +
+  '}'
+  );
+
+  addCss('' +
+  '.steps .section_text {' +
+    'background-color: inherit;' +
+    'padding: 0;' +
+    'border: none;' +
+    'padding-top: 20px;' +
+  '}' +
+  '.steps_list_2 ul,' +
+  '.steps_list_2 ol {' +
+    'padding-left: 55px;' +
+    'padding-top: 5px;' +
+  '}' +
+  '.steps_list_2 li {' +
+    'margin-bottom: 30px;' +
+    'font-size: 16px;' +
+    'line-height: 25px;' +
+    'color: #545454;' +
+    'list-style: none;' +
+    'background-color: #fff;' +
+    'border-radius: 4px;' +
+    '-moz-border-radius: 4px;' +
+    '-webkit-border-radius: 4px;' +
+    'padding: 20px;' +
+    'border: 1px solid #e5e5e5;' +
+    'clear: both;' +
+  '}' +
+  '.steps_list_2 li li {' +
+    'border: none;' +
+    'margin: 0;' +
+    'list-style: disc;' +
+    'padding: 0;' +
+  '}' +
+  '.steps_list_2 .mwimg.largeimage {' +
+    'margin-left: -21px;' +
+    'margin-right: -21px;' +
+    'margin-top: -21px;' +
+  '}' +
+  '.mwimg {' +
+    'line-height: 0px;' +
+    'position: relative;' +
+    'margin-bottom: 20px;' +
+    'overflow: hidden;' +
+  '}' +
+  '.mwimg a.image {' +
+    'display: block;' +
+    'overflow: hidden;' +
+    'border: 1px solid #dfdfdf;' +
+    '-webkit-border-top-left-radius: 5px;' +
+    '-webkit-border-top-right-radius: 5px;' +
+    '-moz-border-radius-topleft: 5px;' +
+    '-moz-border-radius-topright: 5px;' +
+    'border-top-left-radius: 5px;' +
+    'border-top-right-radius: 5px;' +
+  '}' +
+  '.step_num {' +
+    'font-size: 43px;' +
+    'color: #545454;' +
+    'padding: 8px 15px 3px 0;' +
+    'float: left;' +
+    'font-weight: bold;' +
+  '}'
+  );
+
+  setHtml($('div#article').html());
+}
+%>

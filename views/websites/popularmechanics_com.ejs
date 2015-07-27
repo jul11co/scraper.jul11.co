@@ -1,0 +1,81 @@
+<%
+if (urlMatch('popularmechanics.com')) {
+
+  setScriptFile('popularmechanics_com.ejs');
+
+  $('.lazy-image').each(function() {
+    var data_src = $(this).attr('data-src');
+    if (data_src) {
+      $(this).css('display', 'block');
+      $(this).attr('src', data_src);
+      $(this).addClass('lazy-loaded');
+    }
+  });
+
+  removeSelector('.share-module');
+
+  removeSelector('.share-sticky');
+  removeSelector('.image-share');
+  removeSelector('.share-button');
+  removeSelector('.article-body--share-container');
+  removeSelector('.landing-feed-container');
+
+  removeSelector('.embedded-recirc--container');
+  removeSelector('.embedded-recirc--link');
+
+  removeSelector('#comments');
+
+  removeInlineScripts('article');
+  normalizeLinks('article');
+
+  addCss('' +
+  'h2.article-sub-title {' +
+    'font-size: 18px;' +
+    'font-style: italic;' +
+  '}'
+  );
+  addCss('' +
+  '.tags {' +
+    'list-style: none;' +
+    'margin: 5px 0 10px 0;' +
+    'padding: 20px 0;' +
+  '}' +
+  '.tags--item {' +
+    'display: block;' +
+    'float: left;' +
+    'line-height: 0;' +
+    'margin-left: 0;' +
+    'margin-right: 10px;' +
+    'text-align: right;' +
+  '}' +
+  '.tags--link {' +
+    'font-size: 1.2rem;' +
+    'line-height: 1.2;' +
+    'color: #367F9A;' +
+    'text-rendering: optimizeLegibility;' +
+    'text-transform: uppercase;' +
+    'word-wrap: break-word;' +
+    'padding-top: 5px;' +
+    'border: 1px solid;' +
+    'padding: 5px;' +
+  '}'
+  );
+  addCss('' +
+  '.pullquote-C {' +
+    'margin: 20px 5px;' +
+  '}' +
+  '.pullquote-C p,' +
+  '.pullquote-L p {' +
+    'background-color: #F5ED30;' +
+    'display: inline;' +
+    'line-height: 1.75;' +
+    'text-transform: uppercase;' +
+    'padding: 5px 0;' +
+    'margin-right: 15px;' +
+    'box-shadow: 10px 0 0 #F5ED30,-10px 0 0 #F5ED30;' +
+  '}'
+  );
+
+  setHtml($('article').html());
+}
+%>

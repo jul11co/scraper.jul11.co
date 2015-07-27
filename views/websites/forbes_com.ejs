@@ -1,0 +1,18 @@
+<%
+if (urlMatch('forbes.com')) {
+
+  setScriptFile('forbes_com.ejs');
+
+  removeSelector('.comment_links');
+  removeSelector('.article_actions');
+
+  removeInlineScripts('.article_content');
+  normalizeLinks('.article_content');
+
+  $('div.wp-caption.alignnone').each(function() {
+  	$(this).css('width', '100%');
+  });
+
+  setHtml($('.article_content').html());
+}
+%>

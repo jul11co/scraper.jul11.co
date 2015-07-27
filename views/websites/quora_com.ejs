@@ -1,0 +1,39 @@
+<%
+if (urlMatch('quora.com')) {
+
+  setScriptFile('quora_com.ejs');
+
+  removeSelector('.ActionBar');
+  removeSelector('.profile_photo_img');
+  removeSelector('.AnswerVoters');
+  removeSelector('.CredibilityFact');
+  removeSelector('.more_questions_text');
+  removeSelector('.AnswerFooter');
+  removeSelector('.inline_answer');
+  removeSelector('.pager_next');
+  removeSelector('.question_answers_header');
+  removeSelector('.CollapsedAnswersSectionCollapsed');
+
+  normalizeLinks('.grid_page_center_col');
+
+  addCss('' +
+  '.author_info {' +
+    'font-weight: bold;' +
+  '}' +
+  '.Answer {' +
+    'border-top: 1px solid #DBD7D7;' +  
+    'padding-top: 5px;' +    
+    'margin: 15px;' +    
+  '}' +
+  '.ExpandedAnswer {' +
+    'padding-top: 5px;' +
+    'padding: 5px 10px 15px 0px;' +
+  '}' +
+  '.pagedlist_item .logged_out_related_questions_heading {' +
+    'padding-left: 15px;' +
+  '}'
+  );
+
+  setHtml($('.grid_page_center_col').html());
+}
+%>

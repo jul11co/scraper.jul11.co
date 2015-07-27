@@ -1,0 +1,59 @@
+<%
+if (urlMatch('vechai.info')) {
+
+  setScriptFile('vechai_info.ejs');
+
+  if ($('div#contentChapter').length) {
+
+    removeSelector('#topBanner');
+    removeSelector('#advInPage');
+
+    removeSelector('.SocialLink');
+
+    removeInlineScripts('div#contentChapter');
+    normalizeLinks('div#contentChapter');
+    normalizeLinks('div.ChapterNav');
+    normalizeLinks('div.BoxTitle');
+
+    addCss('' +
+    '.Center {' +
+      'text-align: center;' +
+    '}' +
+    '#contentChapter {' +
+      'margin: 20px 0 20px;' +
+      'position: relative;' +
+      'z-index: 0;' +
+    '}' +
+    '#contentChapter img {' +
+      'position: relative;' +
+      'z-index: 2;' +
+      'border: solid 3px #c0cdb3;' +
+      'margin-bottom: 10px;' +
+    '}'
+    );
+
+    setHtml($('div#contentChapter').parent().html());
+  } else if ($('div#mainStory').length) {
+
+    removeSelector('.breadcrumb');
+    removeSelector('.StarRating');
+    removeSelector('#socialBtn');
+    removeSelector('aside.col-md-4');
+
+    removeInlineScripts('div#mainStory');
+    normalizeLinks('div#mainStory');
+
+    $('.IntroText').addClass('col-md-12');
+    $('#chapterList').removeClass('col-md-8').addClass('col-md-12');
+
+    addCss('' +
+    '#chapterList ul>li>ul.List.IndentOut {' +
+      'list-style: none;' +
+      'padding-left: 0' +
+    '}'
+    );
+
+    setHtml($('div#mainStory').html());
+  }
+}
+%>

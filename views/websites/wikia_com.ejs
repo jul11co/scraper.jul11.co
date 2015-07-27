@@ -1,0 +1,81 @@
+<%
+if (urlMatch('wikia.com')) {
+
+  setScriptFile('wikia_com.ejs');
+
+  removeSelector('.header-column.header-tally');
+  removeSelector('.wikia-button.comments');
+  removeSelector('.wikia-menu-button');
+  removeSelector('.toctoggle');
+  removeSelector('.editsection');
+  removeSelector('#articleCategories');
+
+  normalizeLinks('.WikiaMainContent');
+
+  addCss('' +
+  'h1 {' +
+    'font-size: 1.8em;' +
+  '}' +
+  '.firstHeading {' +
+    'overflow: visible;' +
+  '}' +
+  'h2 {' +
+    'font-size: 1.5em;' +
+    'margin-top: 1em;' +
+  '}' +
+  'h3 {' +
+    'font-size: 1.2em;' +
+    'font-weight: bold;' +
+  '}' +
+  '.infobox {' +
+    'background-color: black;' +
+    'border: 1px solid #323232;' +
+    'clear: right;' +
+    'color: #d5d4d4;' +
+    'float: right;' +
+    'margin-bottom: .5em;' +
+    'margin-left: 1em;' +
+    'padding: .2em;' +
+  '}' +
+  '.infobox caption {' +
+    'font-size: 125%;' +
+    'font-weight: bold;' +
+    'padding: 0.2em;' +
+    'text-align: center;' +
+    'color: #444;' +
+  '}' +
+  '.thumb {' +
+    'margin-bottom: .5em;' +
+    'width: auto;' +
+    'background-color: transparent;' +
+  '}' +
+  '.thumbinner {' +
+    'border: 1px solid #ccc;' +
+    'padding: 3px;' +
+    'background-color: #f9f9f9;' +
+    'font-size: 94%;' +
+    'text-align: center;' +
+    'overflow: hidden;' +
+    'min-width: 100px;' +
+  '}' +
+  '.thumbcaption {' +
+    'text-align: left;' +
+  '}' +
+  '.tright, .floatright {' +
+    'clear: right;' +
+    'float: right;' +
+  '}' +
+  '.tleft, .floatleft {' +
+    'float: left;' +
+    'clear: left;' +
+  '}' +
+  '.article-thumb.tleft {' +
+    'clear: left;' +
+    'float: left;' +
+    'margin-right: 20px;' +
+  '}'
+  );
+
+  setHtml($('.WikiaMainContent').html());
+}
+%>

@@ -1,0 +1,24 @@
+{
+  "name": "Scraper",
+  "version": "0.0.1",
+  "description": "Scraper - scraping service powered by NodeJS, Cheerio & EJS",
+  "author": "jul11co (jul.eleven.co@gmail.com)",
+  "license": "MIT",
+  "main": "server.js",
+  "scripts": {
+    "start": "npm install",
+    "build": "bin/build.sh"
+  },
+  "dependencies": {
+    "express": "~3.4.4",
+    "ejs": "~0.8.5",
+    "mongoose": "~3.8.1",
+    "async": "latest",
+    "request": "~2.58.0",
+    "cheerio": "~0.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.2.1",
+    "minifier": "~0.6.2"
+  }
+}

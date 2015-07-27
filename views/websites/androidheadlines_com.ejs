@@ -1,0 +1,49 @@
+<%
+if (urlMatch('androidheadlines.com')) {
+
+  setScriptFile('androidheadlines_com.ejs');
+
+  $('img').each(function() {
+    $(this).removeAttr('width');
+    $(this).removeAttr('height');
+  });
+
+  removeSelector('.adunit');
+
+  removeSelector('.st_googleplus_custom');
+  removeSelector('.st_facebook_custom');
+  removeSelector('.st_twitter_custom');
+  removeSelector('.st_pinterest_custom');
+  removeSelector('.st_linkedin_custom');
+
+  removeSelector('#jp-relatedposts');
+  removeSelector('#meet-the-team');
+
+  removeSelector('.single-sidebar');
+  removeSelector('.android-news');
+  removeSelector('.app-reviews');
+
+  removeSelector('.one-column-ads');
+
+  removeSelector('.dsq-brlink');
+
+  removeSelector('.screen-reader-text');
+
+  removeInlineScripts('#main');
+  normalizeLinks('#main');
+
+  addCss('' +
+  '.entry-title {' +
+    'margin-top: 0;' +
+  '}' +
+  '.single article .entry-content p,' +
+  '.page article .entry-content p {' +
+    'margin: 20px 0;' +
+    'font-size: 120%;' +
+    'line-height: 27px;' +
+  '}'
+  );
+
+  setHtml($('#main').html());
+}
+%>

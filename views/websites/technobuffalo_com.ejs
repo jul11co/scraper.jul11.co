@@ -1,0 +1,81 @@
+<%
+if (urlMatch('technobuffalo.com')) {
+
+  setScriptFile('technobuffalo_com.ejs');
+
+  removeSelector('.social-tab-mini');
+  removeSelector('.follow-block');
+
+  removeSelector('.author-small');
+  removeSelector('#mc_embed_signup');
+
+  removeSelector('#sidebar');
+  removeSelector('section.whats-next');
+
+  removeSelector('.ad-leader-insert');
+  removeSelector('hr');
+
+  normalizeLinks('#content-row');
+  removeInlineScripts('#content-row');
+
+  addCss('' +
+  '.block-tax a,' +
+  '.block-tax .top-nav-element .clickable,' +
+  '.top-nav-element .block-tax .clickable {' +
+    'background-color: #f3f3f3;' +
+    'color: #666;' +
+    'display: inline-block;' +
+    'font-size: 10px;' +
+    'font-weight: bold;' +
+    'line-height: 1;' +
+    'letter-spacing: 1px;' +
+    'margin-bottom: 5px;' +
+    'margin-right: 5px;' +
+    'padding: 6px 8px;' +
+    'text-transform: uppercase;' +
+  '}'
+  );
+
+  addCss('' +
+  '.sourcevia .label {' +
+    'color: #999;' +
+    'margin-right: 3px;' +
+  '}' +
+  '.fCaps, ' +
+  '.fCaps h3, ' +
+  '.fCaps h4, ' +
+  '.fCaps h5, ' +
+  '.fCaps a, ' +
+  '.fCaps .top-nav-element .clickable, ' +
+  '.top-nav-element .fCaps .clickable {' +
+    'font-size: 11px;' +
+    'font-weight: bold;' +
+    'letter-spacing: 1px;' +
+    'line-height: 1em;' +
+    'margin-bottom: 10px;' +
+    'text-transform: uppercase;' +
+  '}' +
+  '.tags {' +
+    'color: #999;' +
+  '}' +
+  '.tags .label {' +
+    'display: inline-block;' +
+    'margin: 0 5px 10px 0;' +
+    'color: #999;' +
+  '}' +
+  '.tags .hashtag {' +
+    'color: #999;' +
+    'font-weight: normal !important;' +
+    'padding-right: 3px;' +
+  '}' +
+  '.tags .tag-blue {' +
+    'color: #28a0ff;' +
+  '}' +
+  '.tags .tag-black {' +
+    'color: #000;' +
+  '}'
+  );
+
+  setHtml($('#content-row').html());
+}
+%>

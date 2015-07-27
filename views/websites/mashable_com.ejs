@@ -1,0 +1,84 @@
+<%
+if (urlMatch('mashable.com')) {
+
+  setScriptFile('mashable_com.ejs');
+
+  removeSelector('.follow-channel');
+
+  removeSelector('.shares');
+  removeSelector('.article-comments');
+
+  removeSelector('.sidebar');
+
+  removeSelector('#more-in-channel');
+  removeSelector('.new-stories');
+  removeSelector('.hot-stories');
+  removeSelector('.big-stories');
+
+  addCss('' +
+  'ol.slides {' +
+    'list-style: none;' +
+  '}'
+  );
+  addCss('' +
+  '.page-header {' +
+    'padding-bottom: 10.5px;' +
+    'margin: 0 0 10px;' +
+    'border-bottom: 1px solid #eeeeee;' +
+  '}' +
+  '.page-header h2 {' +
+    'margin: 0;' +
+    'font: bold 10px Arial,sans-serif;' +
+    'font-size: 18px;' +
+    'font-size: 1.8rem;' +
+    'color: #8a8c8e;' +
+  '}'
+  );
+  addCss('' +
+  '.article-info {' +
+    'padding-bottom: 10px;' +
+  '}' +
+  '.author_name {' +
+    'margin: 7px 0;' +
+    'display: block;' +
+  '}'
+  );
+  addCss('' +
+  'time {' +
+    'display: block;' +
+    'border-top: 1px solid #ccc;' +
+    'padding-top: 6px;' +
+    'font-weight: bold;' +
+    'font-size: 11px;' +
+    'font-size: 1.1rem;' +
+    'line-height: 14px;' +
+  '}'
+  );
+  addCss('' +
+  '.article-topics {' +
+    'font-size: 11px;' +
+    'font-size: 1.1rem;' +
+    'text-transform: uppercase;' +
+    'font-weight: bold;' +
+  '}' +
+  '.article-topics a {' +
+    'color: #69a03b;' +
+    'font-weight: normal;' +
+  '}'
+  );
+
+  if ($('div#main').length) {
+
+    removeInlineScripts('div#main');
+    normalizeLinks('div#main');
+
+    setHtml($('div#main').html());
+  } else {
+
+    removeInlineScripts('#post-content');
+    normalizeLinks('#post-content');
+
+    setHtml($('#post-content').html());
+  }
+}
+%>

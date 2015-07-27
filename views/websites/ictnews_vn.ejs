@@ -1,0 +1,53 @@
+<%
+if (urlMatch('ictnews.vn')) {
+
+  setScriptFile('ictnews_vn.ejs');
+
+  removeSelector('.breadcrumb');
+  removeSelector('.social');
+  removeSelector('.share');
+  removeSelector('.viewcount');
+  removeSelector('.commentcount');
+
+  removeSelector('#articleRelations');
+  removeSelector('#admicroarticle');
+  removeSelector('.comment');
+  removeSelector('.mb20');
+
+  if ($('#listArticles').length) {
+
+    removeInlineScripts('#listArticles');
+    normalizeLinks('#listArticles');
+
+    var paging_html = '';
+    if ($('.paging').length) {
+      normalizeLinks('.paging');
+      paging_html = $('.paging').html();
+    }
+    setHtml($('#listArticles').html() + paging_html);
+
+  } else {
+
+    removeInlineScripts('.article');
+    normalizeLinks('.article');
+
+    addCss('' +
+    '.pSapo {' +
+      'font-size: 16px;' +
+      'margin-top: 10px;' +
+      'margin-bottom: 10px;' +
+      'font-weight: bold;' +
+      'line-height: 1.4;' +
+    '}' +
+    '.morearticle .item a h3 {' +
+      'font-size: 16px;' +
+      'margin-top: 10px;' +
+      'margin-bottom: 5px;' +
+      'color: #2196f3;' +
+    '}'
+    );
+
+    setHtml($('.article').html());
+  }
+}
+%>

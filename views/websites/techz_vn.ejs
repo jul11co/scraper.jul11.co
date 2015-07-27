@@ -1,0 +1,17 @@
+<%
+if (urlMatch('techz.vn')) {
+
+  setScriptFile('techz_vn.ejs');
+
+  removeSelector('.about-author');
+  removeSelector('#tz-comments-box');
+  removeSelector('.tz-box');
+  removeSelector('#seo-keyword');
+  removeSelector('#on-hand-relate');
+
+  removeInlineScripts('#body');
+  normalizeLinks('#body');
+
+  setHtml($('#body').html());
+}
+%>

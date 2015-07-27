@@ -1,0 +1,121 @@
+<%
+if (urlMatch('androidcommunity.com')) {
+
+  setScriptFile('androidcommunity_com.ejs');
+
+  if ($('.posts').length) {
+
+    removeSelector('.comments');
+
+    removeInlineScripts('.posts');
+    normalizeLinks('.posts');
+
+    addCss('' +
+    '.story {' +
+      'padding: 20px 0px;' +
+      'padding-left: 5px;' +
+      'border-bottom: 1px solid #ddd;' +
+    '}' +
+    '.story .sg-image {' +
+      'width: 160px;' +
+      'float: left;' +
+    '}' +
+    '.story h3.title,' +
+    '.feature h3.title {' +
+      'margin: 0;' +
+      'font-size: 24px;' +
+      'line-height: 30px;' +
+      'position: relative;' +
+      'top: -6px;' +
+      'font-weight: 300;' +
+      'margin-bottom: 10px;' +
+    '}' +
+    '.story a.postimage figure {' +
+      'position: relative;' +
+      'min-height: 120px;' +
+      'overflow: hidden;' +
+      'width: 100%;' +
+      'background-size: cover !important;' +
+      'background-position: center center !important;' +
+    '}'
+    );
+
+    setHtml($('.posts').html());
+  } else {
+
+    removeSelector('.sharedaddy');
+    removeSelector('.comments-count');
+    removeSelector('.avatar');
+    removeSelector('.gacm');
+
+    removeInlineScripts('.post-single');
+    normalizeLinks('.post-single');
+
+    addCss('' +
+    '.author_date {' +
+      'font-size: 14px;' +
+      'margin-top: 20px;' +
+      'color: #999;' +
+    '}' +
+    '.tags a {' +
+      'opacity: 0.4;' +
+      'display: inline-block;' +
+      'padding: 3px 10px;' +
+      'font-size: 12px;' +
+      'background-color: #252525;' +
+      'text-transform: lowercase;' +
+      'border-radius: 2px;' +
+      'color: white;' +
+      'margin-right: 5px;' +
+      'margin-bottom: 5px;' +
+      'transition: opacity 0.2s;' +
+    '}' +
+    '.tags a:hover {' +
+      'opacity: 1;' +
+    '}' +
+    '.gallery dl,' +
+    '.ilightbox_wrap dl {' +
+      'border-bottom: 1px solid #ddd;' +
+      'float: left;' +
+      'width: 20% !important;' +
+      'margin-top: 0px;' +
+      'margin-bottom: -1px;' +
+      'box-sizing: border-box;' +
+      'border-right: 1px solid #ddd;' +
+    '}' +
+    '.gallery dl dt,' +
+    '.ilightbox_wrap dl dt {' +
+      'padding: 10px;' +
+    '}' +
+    '.gallery dl dt img,' +
+    '.ilightbox_wrap dl dt img {' +
+      'width: 100%;' +
+      'height: auto;' +
+    '}' +
+    '.embed-container {' +
+      'position: relative;' +
+      'padding-bottom: 56.25%;' +
+      'padding-top: 30px;' +
+      'height: 0;' +
+      'overflow: hidden;' +
+      'max-width: 100%;' +
+      'height: auto;' +
+    '}' +
+    '.embed-container iframe,' +
+    '.embed-container object,' +
+    '.embed-container embed {' +
+      'position: absolute;' +
+      'top: 0;' +
+      'left: 0;' +
+      'width: 100%;' +
+      'height: 100%;' +
+    '}' +
+    '.end-meta {' +
+      'margin-left: 15px;' +
+    '}'
+    );
+
+    setHtml($('.post-single').html());
+  }
+}
+%>

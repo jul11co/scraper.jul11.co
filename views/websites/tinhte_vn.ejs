@@ -1,0 +1,94 @@
+<%
+if (urlMatch('tinhte.vn')) {
+
+  setScriptFile('tinhte_vn.ejs');
+
+  addCss('' +
+  'ul.Tinhte_Galleria {' +
+    'list-style: none;' +
+  '}'
+  );
+
+  if ($('.newsBlocks').length) {
+
+    removeInlineScripts('.newsBlocks');
+    normalizeLinks('.newsBlocks');
+
+    setHtml($('.newsBlocks').html());
+
+  } else if ($('.mainContainer_noSidebar').length) {
+
+    removeSelector('.posterAvatar');
+    removeSelector('.stats');
+    removeSelector('.pageDescriptionSocialButtons');
+    removeSelector('.sectionHeaders');
+    removeSelector('.titleText .iconKey');
+    removeSelector('.titleText .secondRow');
+
+    removeSelector('#DiscussionListOptionsHandle');
+    removeSelector('.DiscussionListOptions');
+    removeSelector('#PreviewTooltip');
+    removeSelector('.sharePage');
+    removeSelector('.funbox');
+    removeSelector('.breadBoxTop');
+    removeSelector('.breadBoxBottom');
+    removeSelector('.linkGroup');
+
+    removeSelector('li.gridItem div.controls');
+    removeSelector('li.gridItem div.gfooter');
+    removeSelector('.extraInfos .classified');
+
+    addCss('' +
+    'h3.title {' +
+      'margin-top: 10px;' +
+      'margin-bottom: 0;' +
+    '}' +
+    'h2.title {' +
+      'font-size: 18px;' +
+    '}' +
+    '.thumbnail {' +
+      'border: none;' +
+      'margin-bottom: 5px;' +
+    '}' + 
+    '.thumbnail>img, .thumbnail a>img {' +
+      'margin-left: 0;' +
+    '}' +
+    'ol.searchResultsList {' +
+      'list-style: none;' +
+      'padding-left: 0;' +
+    '}'
+    );
+
+    removeInlineScripts('.mainContainer_noSidebar');
+    normalizeLinks('.mainContainer_noSidebar');     
+
+    setHtml($('.mainContainer_noSidebar').html());
+  } else {
+    
+    removeSelector('.messageUserInfo');
+    removeSelector('.messageDetails');
+    removeSelector('.firsPostSocialButtons');
+    // removeSelector('.sidebar');
+    removeSelector('.funbox');
+    removeSelector('.likesSummary');
+
+    removeSelector('.previewContent');
+
+    removeSelector('.pageDescriptionSocialButtons');
+
+    addCss('' + 
+    'blockquote {' +
+      'border: none;' +
+      'padding: 0' +
+    '}'
+    );
+
+    normalizeLinks('.titleBar');
+
+    removeInlineScripts('.position-0');
+    normalizeLinks('.position-0');
+
+    setHtml($('.titleBar').html() + $('.position-0').html());
+  }
+}
+%>

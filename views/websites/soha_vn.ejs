@@ -1,0 +1,99 @@
+<%
+if (urlMatch('soha.vn')) {
+
+  setScriptFile('soha_vn.ejs');
+
+  removeSelector('.social');
+  removeSelector('.related-news');
+  removeSelector('#divNewsContentLeft');
+
+  removeSelector('.VCSortableInPreviewMode[type="link-content-footer"]');
+  removeSelector('.VCSortableInPreviewMode[type="RelatedNews"]');
+  removeSelector('.bottom-contact');
+  removeSelector('.interative-box');
+  // removeSelector('.tags');
+
+  normalizeLinks('article');
+  normalizeLinks('#divOlderNews');
+
+  addCss('' +
+  '.news-thread-top {' +
+    'display: inline-block;' +
+    'padding: 2px 15px;' +
+    'background-color: #FCCA00;' +
+    'color: #4D4D4D;' +
+    'font-size: 12px;' +
+    'font-weight: bold;' +
+    'line-height: 18px;' +
+    'border: solid 1px #E1BD00;' +
+    'border-radius: 2px;' +
+  '}'
+  );
+
+  addCss('' +
+  '.news-title {' +
+    'margin-top: 5px;' +
+    'color: #004265;' +
+    'line-height: 38px;' +
+    'font-size: 30px;' +
+    'font-weight: bold;' +
+  '}' +
+  '.news-sapo {' +
+    'font-size: 16px;' +
+    'margin-top: 10px;' +
+    'margin-bottom: 10px;' +
+    'font-weight: bold;' +
+    'line-height: 1.4;' +
+  '}' +
+  '.news-content .VCSortableInPreviewMode[type="content"] {' +
+    'max-width: 435px!important;' +
+    'border: black solid 1px;' +
+    'padding: 10px;' +
+    'background-color: #e6e6fa;' +
+    'text-align: left;' +
+  '}' +
+  '.box-title {' +
+    'margin-bottom: 0;' +
+  '}'
+  );
+
+  addCss('' +
+  '.tags {' +
+    'font-size: 12px;' +
+    'line-height: 22px;' +
+    'position: relative;' +
+    'padding-left: 35px;' +
+    'padding-bottom: 10px;' +
+  '}' +
+  '.tags * {' +
+    'display: inline-block;' +
+  '}' +
+  '.tags .box-title {' +
+    'position: absolute;' +
+    'top: 7px;' +
+    'left: 0;' +
+    'line-height: 22px;' +
+  '}' +
+  '.tags h3 {' +
+    'margin: 0 7px 0 0;' +
+    'float: left;' +
+  '}' +
+  '.tags a {' +
+    'background-color: #e5e5e5;' +
+    'border-radius: 2px;' +
+    'padding: 3px 7px;' +
+    'color: #333;' +
+    'font-size: 12px;' +
+    'margin: 0;' +
+    'font-weight: normal;' +
+    'text-decoration: none;' +
+  '}' +
+  '.tags a:hover {' +
+    'background-color: #007f74;' +
+    'color: white;' +
+  '}'
+  );
+
+  setHtml($('article').html() + $('#divOlderNews').html());
+}
+%>

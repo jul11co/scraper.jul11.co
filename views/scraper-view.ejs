@@ -1,0 +1,737 @@
+<%
+function getLinkHostname(url) {
+  if (!url) return '';
+  var url_obj = urlutil.parse(url);
+  var url_hostname = (url_obj) ? url_obj.hostname : '';
+  url_hostname = url_hostname.replace(/(www.)/gm, '');
+  return url_hostname;
+}
+function getLinkText(url, max_length) {
+  var url_short = url;
+  // url_short = url_short.replace(/^(https?|ftp):\/\//, '');
+  if (url_short.length > max_length) {
+    url_short = url_short.substring(0, max_length) + '...';
+  }
+  return url_short;
+}
+function shortenDescriptionIfNecessary(description, max_length) {
+  if (!description) description = '';
+  if (description.length > max_length) {
+    description = description.substring(0, max_length) + '...';
+  }
+  return description;
+}
+function compressScript(script_content) {
+  if (!script_content || script_content == '') return '';
+  // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
+  return script_content;
+}
+function compressTemplate(template_content) {
+  if (!template_content || template_content == '') return '';
+  // template_content = template_content.replace(/(\r\n|\n|\r)/gm, '');
+  return template_content;
+}
+function compressCss(css_content) {
+  if (!css_content || css_content == '') return '';
+  css_content = css_content.replace(/(\r\n|\n|\r)/gm, '');
+  css_content = css_content.replace(/\s\s+/gm, '');
+  css_content = css_content.replace(/\t/gm, '');
+  css_content = css_content.replace(/ {/gm, '{');
+  css_content = css_content.replace(/ :/gm, ':');
+  css_content = css_content.replace(/: /gm, ':');
+  css_content = css_content.replace(/, /gm, ',');
+  css_content = css_content.replace(/; /gm, ';');
+  // css_content = css_content.replace(/;}/gm, '}');
+  return css_content;
+}
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.ico">
+
+<%if (page.title) {%>
+  <title><%=page.title%> - Scraper</title>
+<%} else {%>
+  <title><%=page.url%> - Scraper</title>
+<%}%>
+
+  <% include styles %>
+  <link rel="stylesheet" href="/codemirror-5.5/lib/codemirror.css">
+  <link rel="stylesheet" href="/codemirror-5.5/theme/monokai.css">
+
+  <style type="text/css">
+  .navbar {
+    background-color: #9F2274;
+    min-height: 40px;
+  }
+  #sc-main-container {
+    padding-top: 10px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+  .CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
+  }
+  .sc-code-editor-header {
+    background-color: white;
+    height: 50px;
+    padding: 10px;
+    box-shadow: 0 1px 2px rgba(43,59,93,0.29);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+  }
+  .sc-code-editor-header h3 {
+    display: inline;
+    font-size: 24px;
+  }
+  .sc-code-editor-header h3 a {
+    color: #999;
+  }
+  .sc-code-editor {
+    box-shadow: 0 1px 2px rgba(43,59,93,0.29);
+  }
+  </style>
+
+  <style id="sc-page-css" type="text/css">
+<%if (page.css && page.css != '') {%>
+  <%- compressCss(page.css) %>
+<%}%>
+  </style>
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+
+  <a id="back-to-top" href="#" class="btn btn-dark btn-lg toggle"><i class="fa fa-chevron-up"></i></a>
+  
+  <!-- Begin page content -->
+  <div id="sc-main-container" class="container">
+    <div class="row">
+
+      <div class="col-md-12">
+        <h1 class="sc-icon-title"><a href="/">Scraper</a></h1>
+        <form style="display: inline" action="/scraper" method="get">
+          <div class="input-group" style="margin-top: 10px;margin-bottom: 10px;">
+            <input id="sc-input-link" name="link" type="text" class="form-control" placeholder="Enter link here..."
+              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);"
+              value="<%=page.url%>">
+            <span class="input-group-btn">
+              <a id="sc-scrape-async" class="btn btn-primary" href="#"
+                style="margin-left: 10px;"><i class="fa fa-play"></i></a>
+              <a id="sc-scrape-alt" class="btn btn-primary hidden" href="/scraper2?link=<%=encodeURIComponent(page.url)%>"
+                style="margin-left: 10px;">Alt</a>
+              <a id="sc-scrape-json" class="btn btn-success" href="/scrape?link=<%=encodeURIComponent(page.url)%>" target="_blank"
+                style="margin-left: 10px;">JSON</a>
+            </span>
+          </div><!-- /input-group -->
+        </form>
+        <div style="text-align:center;">
+          <div id="sc-scrape-async-loading" class="loader-inline hidden">
+            <img src="/svg/loader.svg" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sc-main-content" class="row">
+
+      <div class="col-md-12" style="margin-top: 20px;margin-bottom: 15px">
+        <div class="btn-group">
+          <a id="sc-scrape-tab-results" href="#" class="btn btn-info btn-sm">Results</a>
+          <a id="sc-scrape-tab-job" href="#" class="btn btn-default btn-sm">Scrape</a>
+        </div>
+      </div>
+
+      <!-- Scrape Results -->
+      <div id="sc-scrape-results" class="col-md-12">
+
+        <div class="sc-page-info">
+          <div class="sc-page-header" style="padding-top: 0;">
+            <p class="sc-page-link-hostname"><%=getLinkHostname(page.url).toUpperCase()%></p>
+<%if (page.title && page.title != "") {%>
+            <h4 class="sc-page-title-wrapper">
+              <a id="sc-page-title" href="<%=page.url%>" target="blank"><%=page.title%></a>
+            </h4>
+<%}%>
+            <div style="overflow:hidden;">
+<%if (page.image && page.image != "") {%>
+              <div class="sc-page-image-wrapper">
+                <img id="sc-page-image" src="<%=page.image%>"/>
+              </div>
+<%}%>
+<%if (page.description && page.description != "") {%>
+              <h5 style="margin: 0;line-height: 1.6;">
+                <span id="sc-page-description" ><%=shortenDescriptionIfNecessary(page.description,400)%></span>
+              </h5>
+<%}%>
+              <p class="sc-page-url">
+                <i class="fa fa-link"></i> <a id="sc-page-url" href="<%=page.url%>" target="_blank"><%=getLinkText(page.url,80)%></a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+<%if (page.html && page.html != '') {%>
+        <div id="sc-page-content" class="sc-page-content">
+          <%- page.html %>
+        </div>
+<%}%>
+      </div>
+
+      <!-- Scrape Job -->
+      <div id="sc-scrape-job" class="col-md-12 hidden" data-job-id="<%if(job.id){%><%=job.id%><%}%>">
+
+<%
+  if (!job.url_matches || job.url_matches && job.url_matches.length == 0) {
+    job.url_matches = [];
+    var hostname = getLinkHostname(page.url);
+    if (hostname != '') job.url_matches.push(hostname);
+  }
+%>
+        <!-- Match Editor -->
+        <div class="sc-code-editor-header">
+          <h3>URL Matches</h3>
+          <div style="float:right;">
+            <a id="sc-scrape-match-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-match-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-match-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-match-editor" name="content" placeholder=" Enter script here" 
+            rows="50" class="sc-code-editor"><%=job.url_matches.join('\n')%></textarea>
+        </div>
+
+        <!-- Script Editor -->
+        <div class="sc-code-editor-header">
+          <h3>Script <small><a href="http://ejs.co/" target="_blank">EJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
+          <div style="float:right;">
+            <a id="sc-scrape-script-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-script-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-script-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
+            rows="50" class="sc-code-editor"><%if(job.script){%><%=job.script%><%}%></textarea>
+        </div>
+
+        <!-- Template Editor -->
+        <div class="sc-code-editor-header">
+          <h3>Template <small><a href="http://ejs.co/" target="_blank">EJS</a></small></h3>
+          <div style="float:right;">
+            <a id="sc-scrape-template-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-template-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-template-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-template-editor" name="content" placeholder=" Enter template here" 
+            rows="50" class="sc-code-editor"><%if(job.template){%><%=job.template%><%}%></textarea>
+        </div>
+
+        <!-- CSS Editor -->
+        <div class="sc-code-editor-header">
+          <h3>Style <small><a href="http://www.w3schools.com/css/" target="_blank">CSS</a></small></h3>
+          <div style="float:right;">
+            <a id="sc-scrape-css-apply" class="btn btn-default btn-sm" href="#">Apply</a>
+            <a id="sc-scrape-css-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-css-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-css-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
+            rows="50" class="sc-code-editor"><%if(job.style){%><%=job.style%><%}%></textarea>
+        </div>
+
+        <div style="height: 50px;padding: 10px;">
+          <div style="float: right;">
+            <a id="sc-scrape-job-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-job-save" class="btn btn-warning btn-sm" href="#">Save all</a>
+            <div id="sc-scrape-job-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="text-muted">Scraper &copy; 2015 Jul11Co</p>
+      <p class="text-muted">Powered by <a href="https://nodejs.org" target="_blank">NodeJS</a>, <a href="http://expressjs.com/" target="_blank">ExpressJS</a>, <a href="http://ejs.co/" target="_blank">EJS</a>, <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a>, <a href="https://codemirror.net/" target="_blank">CodeMirror</a>, <a href="http://jsbeautifier.org/" target="_blank">JSBeautifier</a>, <a href="http://getbootstrap.com/" target="_blank">Bootstrap</a> <a href="https://bootswatch.com/paper/" target="_blank">Paper</a></p>
+    </div>
+  </footer>
+
+  <% include scripts %>
+  <!-- CodeMirror -->
+  <script src="/codemirror-5.5/lib/codemirror.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/keymap/sublime.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/mode/css/css.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/mode/javascript/javascript.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/mode/htmlmixed/htmlmixed.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/edit/matchbrackets.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/comment/continuecomment.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/comment/comment.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/selection/selection-pointer.js" type="text/javascript"></script>
+  <!-- JSBeaufity -->
+  <script src="/js-beautify-1.5.10/js/lib/beautify.js" type="text/javascript"></script>
+  <script src="/js-beautify-1.5.10/js/lib/beautify-css.js" type="text/javascript"></script>
+  <script src="/js-beautify-1.5.10/js/lib/beautify-html.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+  function getLinkText(url, max_length) {
+    var url_short = url;
+    if (url_short.length > max_length) {
+      url_short = url_short.substring(0, max_length) + '...';
+    }
+    return url_short;
+  }
+  function shortenDescriptionIfNecessary(description, max_length) {
+    if (!description) description = '';
+    if (description.length > max_length) {
+      description = description.substring(0, max_length) + '...';
+    }
+    return description;
+  }
+  function compressCss(css_content) {
+    if (!css_content || css_content == '') return '';
+    css_content = css_content.replace(/(\r\n|\n|\r)/gm, '');
+    css_content = css_content.replace(/\s\s+/gm, '');
+    css_content = css_content.replace(/\t/gm, '');
+    css_content = css_content.replace(/ {/gm, '{');
+    css_content = css_content.replace(/ :/gm, ':');
+    css_content = css_content.replace(/: /gm, ':');
+    css_content = css_content.replace(/, /gm, ',');
+    css_content = css_content.replace(/; /gm, ';');
+    // css_content = css_content.replace(/;}/gm, '}');
+    return css_content;
+  }
+  function compressTemplate(template_content) {
+    if (!template_content || template_content == '') return '';
+    // template_content = template_content.replace(/(\r\n|\n|\r)/gm, '');
+    return template_content;
+  }
+  function compressScript(script_content) {
+    if (!script_content || script_content == '') return '';
+    // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
+    return script_content;
+  }
+  function scrapeLinkAjax(link, callback) {
+    $.ajax({
+      url: '/scrape?link=' + encodeURIComponent(link),
+      type: 'get',
+      dataType : 'json'
+    }).success(function (res){
+      // console.log(res);
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
+  }
+  function addJobAjax(job_info, callback) {
+    $.ajax({
+      url: '/jobs/add',
+      type: 'post',
+      data: { 
+        url_matches: job_info.url_matches,
+        script: job_info.script,
+        template: job_info.template,
+        style: job_info.style
+      }
+    }).success(function (res){
+      // console.log(res);
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
+  }
+  function updateJobAjax(job_info, callback) {
+    $.ajax({
+      url: '/jobs/update',
+      type: 'post',
+      data: job_info
+    }).success(function (res){
+      // console.log(res);
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
+  }
+  function bindButtons() {
+
+    var mixedMode = {
+      name: "htmlmixed"
+    };
+
+    var matchEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-match-editor"), {
+      lineWrapping: true,
+      mixedMode,
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter"
+    });
+
+    var scriptEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-script-editor"), {
+      lineWrapping: true,
+      mode: 'javascript',
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter"
+    });
+
+    var templateEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-template-editor"), {
+      lineWrapping: true,
+      mixedMode,
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter",
+      selectionPointer: true
+    });
+
+    document.getElementById("sc-scrape-css-editor").innerHTML = 
+      css_beautify(document.getElementById("sc-scrape-css-editor").value);
+
+    var cssEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-css-editor"), {
+      lineWrapping: true,
+      mode: 'css',
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter"
+    });
+
+    var switchTab = function(tab) {
+      if (tab == 'results') {
+        $('#sc-scrape-tab-results').removeClass('btn-default').addClass('btn-info');
+        $('#sc-scrape-tab-job').removeClass('btn-info').addClass('btn-default');
+        $('#sc-scrape-results').removeClass('hidden');
+        $('#sc-scrape-job').addClass('hidden');
+      } else if (tab == 'job') {
+        $('#sc-scrape-tab-results').removeClass('btn-info').addClass('btn-default');
+        $('#sc-scrape-tab-job').removeClass('btn-default').addClass('btn-info');
+        $('#sc-scrape-results').addClass('hidden');
+        $('#sc-scrape-job').removeClass('hidden');
+      }
+    }
+
+    var applyCss = function() {
+      var css_content = cssEditor.getValue();
+      css_content = compressCss(css_content);
+      $('#sc-page-css').html(css_content);
+    }
+
+    $('#sc-scrape-tab-results').click(function(e) {
+      e.preventDefault();
+      switchTab('results');
+    });
+
+    $('#sc-scrape-tab-job').click(function(e) {
+      e.preventDefault();
+      switchTab('job');
+      matchEditor.refresh();
+      scriptEditor.refresh();
+      templateEditor.refresh();
+      cssEditor.refresh();
+    });
+
+    $('#sc-scrape-job-save').on('click', function(e) {
+      e.preventDefault();
+      var match_content = matchEditor.getValue();
+      var script_content = scriptEditor.getValue();
+      var template_content = templateEditor.getValue();
+      var style_content = cssEditor.getValue();
+      var url_matches = match_content.split("\n");
+      var job_info = {
+        url_matches: url_matches,
+        script: compressScript(script_content),
+        template: compressTemplate(template_content),
+        style: compressCss(style_content)
+      };
+      var job_id = $('#sc-scrape-job').attr('data-job-id');
+      if (job_id && job_id !== '') {
+        job_info.job_id = job_id;
+        $('#sc-scrape-job-saved').addClass('hidden');
+        $('#sc-scrape-job-save').addClass('hidden');
+        $('#sc-scrape-job-save-loading').removeClass('hidden');
+        updateJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-job-save-loading').addClass('hidden');
+          $('#sc-scrape-job-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-job-saved').removeClass('hidden');
+          }
+        });
+      } else {
+        // Add new job
+        $('#sc-scrape-job-saved').addClass('hidden');
+        $('#sc-scrape-job-save').addClass('hidden');
+        $('#sc-scrape-job-save-loading').removeClass('hidden');
+        addJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-job-save-loading').addClass('hidden');
+          $('#sc-scrape-job-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-job-saved').removeClass('hidden');
+            console.log('New job ID: ' + res.job_id);
+            $('#sc-scrape-job').attr('data-job-id', res.job_id);
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-match-save').on('click', function(e) {
+      e.preventDefault();
+      var job_id = $('#sc-scrape-job').attr('data-job-id');
+      if (job_id && job_id !== '') {
+        var match_content = matchEditor.getValue();
+        var url_matches = match_content.split("\n");
+        var job_info = {
+          job_id: job_id,
+          url_matches: url_matches
+        };
+        $('#sc-scrape-match-saved').addClass('hidden');
+        $('#sc-scrape-match-save').addClass('hidden');
+        $('#sc-scrape-match-save-loading').removeClass('hidden');
+        updateJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-match-save-loading').addClass('hidden');
+          $('#sc-scrape-match-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-match-saved').removeClass('hidden');
+          }
+        });
+      } else {
+        var match_content = matchEditor.getValue();
+        var url_matches = match_content.split("\n");
+        var job_info = {
+          url_matches: url_matches
+        };
+        // Add new job
+        $('#sc-scrape-match-saved').addClass('hidden');
+        $('#sc-scrape-match-save').addClass('hidden');
+        $('#sc-scrape-match-save-loading').removeClass('hidden');
+        addJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-match-save-loading').addClass('hidden');
+          $('#sc-scrape-match-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-match-saved').removeClass('hidden');
+            console.log('New job ID: ' + res.job_id);
+            $('#sc-scrape-job').attr('data-job-id', res.job_id);
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-script-save').on('click', function(e) {
+      e.preventDefault();
+      var job_id = $('#sc-scrape-job').attr('data-job-id');
+      if (job_id && job_id !== '') {
+        var script_content = scriptEditor.getValue();
+        var job_info = {
+          job_id: job_id,
+          script: compressScript(script_content)
+        };
+        $('#sc-scrape-script-saved').addClass('hidden');
+        $('#sc-scrape-script-save').addClass('hidden');
+        $('#sc-scrape-script-save-loading').removeClass('hidden');
+        updateJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-script-save-loading').addClass('hidden');
+          $('#sc-scrape-script-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-script-saved').removeClass('hidden');
+          }
+        });
+      } else {
+        var match_content = matchEditor.getValue();
+        var url_matches = match_content.split("\n");
+        var script_content = scriptEditor.getValue();
+        var job_info = {
+          url_matches: url_matches,
+          script: compressScript(script_content)
+        };
+        // Add new job
+        $('#sc-scrape-script-saved').addClass('hidden');
+        $('#sc-scrape-script-save').addClass('hidden');
+        $('#sc-scrape-script-save-loading').removeClass('hidden');
+        addJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-script-save-loading').addClass('hidden');
+          $('#sc-scrape-script-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-script-saved').removeClass('hidden');
+            console.log('New job ID: ' + res.job_id);
+            $('#sc-scrape-job').attr('data-job-id', res.job_id);
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-template-save').on('click', function(e) {
+      e.preventDefault();
+      var job_id = $('#sc-scrape-job').attr('data-job-id');
+      if (job_id && job_id !== '') {
+        var template_content = templateEditor.getValue();
+        var job_info = {
+          job_id: job_id,
+          template: compressTemplate(template_content)
+        };
+        $('#sc-scrape-template-saved').addClass('hidden');
+        $('#sc-scrape-template-save').addClass('hidden');
+        $('#sc-scrape-template-save-loading').removeClass('hidden');
+        updateJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-template-save-loading').addClass('hidden');
+          $('#sc-scrape-template-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-template-saved').removeClass('hidden');
+          }
+        });
+      } else {
+        var match_content = matchEditor.getValue();
+        var url_matches = match_content.split("\n");
+        var template_content = templateEditor.getValue();
+        var job_info = {
+          url_matches: url_matches,
+          template: compressTemplate(template_content)
+        };
+        // Add new job
+        $('#sc-scrape-template-saved').addClass('hidden');
+        $('#sc-scrape-template-save').addClass('hidden');
+        $('#sc-scrape-template-save-loading').removeClass('hidden');
+        addJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-template-save-loading').addClass('hidden');
+          $('#sc-scrape-template-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-template-saved').removeClass('hidden');
+            console.log('New job ID: ' + res.job_id);
+            $('#sc-scrape-job').attr('data-job-id', res.job_id);
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-css-save').on('click', function(e) {
+      e.preventDefault();
+      var job_id = $('#sc-scrape-job').attr('data-job-id');
+      if (job_id && job_id !== '') {
+        var style_content = cssEditor.getValue();
+        var job_info = {
+          job_id: job_id,
+          style: compressCss(style_content)
+        };
+        $('#sc-scrape-css-saved').addClass('hidden');
+        $('#sc-scrape-css-save').addClass('hidden');
+        $('#sc-scrape-css-save-loading').removeClass('hidden');
+        updateJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-css-save-loading').addClass('hidden');
+          $('#sc-scrape-css-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-css-saved').removeClass('hidden');
+          }
+        });
+      } else {
+        var match_content = matchEditor.getValue();
+        var url_matches = match_content.split("\n");
+        var style_content = cssEditor.getValue();
+        var job_info = {
+          url_matches: url_matches,
+          style: compressCss(style_content)
+        };
+        // Add new job
+        $('#sc-scrape-css-saved').addClass('hidden');
+        $('#sc-scrape-css-save').addClass('hidden');
+        $('#sc-scrape-css-save-loading').removeClass('hidden');
+        addJobAjax(job_info, function(err, res) {
+          $('#sc-scrape-css-save-loading').addClass('hidden');
+          $('#sc-scrape-css-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-css-saved').removeClass('hidden');
+            console.log('New job ID: ' + res.job_id);
+            $('#sc-scrape-job').attr('data-job-id', res.job_id);
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-css-apply').on('click', function(e){
+      e.preventDefault();
+      applyCss();
+      switchTab('results');
+    });
+
+    $('#sc-scrape-async').on('click', function(e) {
+      e.preventDefault();
+      var link = $('#sc-input-link').val();
+      if (link && link != '') {
+        $('#sc-scrape-async-loading').removeClass('hidden');
+        $('#sc-main-content').addClass('hidden');
+        scrapeLinkAjax(link, function(err, result) {
+          $('#sc-scrape-async-loading').addClass('hidden');
+          $('#sc-main-content').removeClass('hidden');
+          if (!err && result) {
+            console.log(result);
+            if (result.page) {              
+              window.history.pushState({}, result.page.title + ' - Scraper', 
+                '/scraper?link=' + encodeURIComponent(result.page.url));
+              $('#sc-scrape-json').attr('href', '/scrape?link=' + encodeURIComponent(result.page.url));
+              $('#sc-input-link').val(result.page.url);
+
+              $('#sc-page-title').html(result.page.title);
+              $('#sc-page-title').attr('href', result.page.url);
+              $('#sc-page-description').html(shortenDescriptionIfNecessary(result.page.description,800));
+              $('#sc-page-image').attr('src', '');
+              $('#sc-page-image').attr('src', result.page.image);
+              $('#sc-page-url').html(getLinkText(result.page.url,80));
+              $('#sc-page-url').attr('href', result.page.url);
+
+              $('#sc-page-content').html(result.page.html);
+              $('#sc-page-css').html(result.page.css);
+            }
+            if (result.job) {
+              $('#sc-scrape-job').attr('data-job-id', result.job.id);
+              matchEditor.getDoc().setValue(result.job.url_matches.join('\n'));
+              scriptEditor.getDoc().setValue(result.job.script);
+              templateEditor.getDoc().setValue(result.job.template);
+              var css_content = css_beautify(result.job.style);
+              cssEditor.getDoc().setValue(css_content);
+            }
+          }
+        });
+      }
+    });
+
+  }
+  $(function() {
+    bindButtons();
+  });
+  </script>
+
+</body>
+</html>

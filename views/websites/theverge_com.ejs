@@ -1,0 +1,104 @@
+<%
+if (urlMatch('theverge.com')) {
+
+  setScriptFile('theverge_com.ejs');
+
+  $('div.vox-lazy-load').each(function() {
+    var original = $(this).attr('data-original');
+    if (original) {
+      $(this).css('background-image', 'url(' + original + ')');
+      $(this).addClass('lazy-loaded');
+    }
+  });
+
+  $('img.vox-lazy-load').each(function() {
+    var original = $(this).attr('data-original');
+    if (original) {
+      $(this).attr('src', original);
+      $(this).addClass('lazy-loaded');
+    }
+  });
+
+  // removeSelector('.m-linkset');
+  removeSelector('.m-video-hero.js-video-linkset');
+  removeSelector('.m-linkset__title-bar');
+
+  removeSelector('.m-article__share-buttons');
+  removeSelector('#chorus-social-fixed');
+
+  removeSelector('.yahoo-recommends');
+  removeSelector('.m-article__comments-section');
+  removeSelector('.m-ad');
+
+  removeSelector('.p-entry-header__labels');
+  removeSelector('.p-entry-header__comments');
+
+  removeSelector('.m-entry__sidebar');
+
+  addCss('' +
+  '.p-entry-header__byline {' +
+    'list-style: none;' +
+    'padding-left: 0' +
+  '}' +
+  '.m-article__sources {' +
+    'list-style: none;' +
+    'padding-left: 0;' +
+  '}' +
+  '.m-article__sources strong,' +
+  '.m-article__sources a {' +
+    'font-family: ff-din-web-condensed,Helvetica,sans-serif;' +
+    'font-size: .9rem !important;' +
+    'font-weight: 600;' +
+    'text-transform: uppercase;' +
+    'color: #FFF;' +
+    'display: inline-block;' +
+    'padding: 5px 7px 2px;' +
+    'line-height: 1 !important;' +
+    'margin: 0 1px 1px 0;' +
+  '}' +
+  '.m-article__sources a {' +
+    'background-color: #AAA;' +
+  '}' +
+  '.m-article__sources .via strong,' +
+  '.m-article__sources .source strong {' +
+    'background-color: #fa4b2a;' +
+  '}' +
+  '.m-article__sources strong {' +
+    'background-color: #000;' +
+  '}' +
+  '.p-dynamic-image {' +
+    '-webkit-box-shadow: inset 0 0 50px rgba(0,0,0,0.5);' +
+    '-moz-box-shadow: inset 0 0 50px rgba(0,0,0,0.5);' +
+    'box-shadow: inset 0 0 50px rgba(0,0,0,0.5);' +
+    'background-size: cover;' +
+    'background-position: center;' +
+    'background-repeat: no-repeat;' +
+    'position: relative;' +
+  '}' +
+  '.m-article__entry-section>.p-dynamic-image {' +
+    'padding-top: 66.66667%;' +
+    'width: 100%;' +
+  '}'
+  );
+
+  if ($('.m-feature').length) {
+
+    removeInlineScripts('.m-feature');
+    normalizeLinks('.m-feature');
+
+    setHtml($('.m-feature').html());
+  } else if ($('.m-tag-page__content').length) {
+    
+    removeInlineScripts('.m-tag-page__content');
+    normalizeLinks('.m-tag-page__content');
+
+    setHtml($('.m-tag-page__content').html());
+  } else if ($('.m-entry').length) {
+
+    removeInlineScripts('.m-entry');
+    normalizeLinks('.m-entry');
+
+    setHtml($('.m-entry').html());
+  }
+}
+%>

@@ -1,0 +1,21 @@
+<%
+if (urlMatch('news.discovery.com')) {
+
+  setScriptFile('discovery_com.ejs');
+
+  removeSelector('.title-super');
+
+  removeSelector('.module-more-like');
+  removeSelector('#share-wrap');
+  removeSelector('#contentBarNewsletter');
+  removeSelector('.editorial-recommend');
+  removeSelector('.editorial-comments');
+  removeSelector('.editorial-adsense');
+  removeSelector('#right-rail');
+
+  removeInlineScripts('#site-content');
+  normalizeLinks('#site-content');
+
+  setHtml($('#site-content').html());
+}
+%>

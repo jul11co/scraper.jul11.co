@@ -1,0 +1,102 @@
+<%
+if (urlMatch('stackoverflow.com') || urlMatch('stackexchange.com')) {
+
+  setScriptFile('stackoverflow_com.ejs');
+
+  removeSelector('.answer-votes');
+
+  removeSelector('.newsletter-anon');
+  removeSelector('.question-status');
+
+  removeSelector('.new-login-form');
+  removeSelector('.new-post-login');
+  removeSelector('.form-submit.cbt');
+  removeSelector('.bottom-notice');
+
+  removeSelector('#post-form');
+
+  removeSelector('#herobox-mini');
+  removeSelector('.votecell');
+
+  removeSelector('.vt');
+  removeSelector('#feed-link');
+
+  removeSelector('.answers-subheader #tabs');
+
+  removeSelector('.user-gravatar32');
+  removeSelector('.badge1');
+  removeSelector('.badge2');
+  removeSelector('.badge3');
+  removeSelector('.badgecount');
+  removeSelector('.reputation-score');
+
+  removeSelector('.comments-link');
+  removeSelector('.js-link-separator');
+
+  // removeSelector('#sidebar');
+  removeSelector('.question-stats');
+  removeSelector('.everyonelovesstackoverflow');
+  removeSelector('#hireme');
+  removeSelector('#chat-feature');
+  removeSelector('#newsletter-ad');
+  removeSelector('#hot-network-questions');
+
+  removeInlineScripts('#content');
+  normalizeLinks('#content');
+
+  addCss('' +
+  '.post-tag {' +
+    'color: #3e6d8e;' +
+    'font-size: 12px;' +
+    'white-space: nowrap;' +
+    'background: #e4edf4;' +
+    'border: 1px solid #e4edf4;' +
+    'display: inline-block;' +
+    'margin: 2px 2px 2px 0;' +
+    'border-radius: 0;' +
+    '-webkit-transition: color 0.15s ease, background 0.15s ease, border 0.15s ease;' +
+  '}' +
+  '.comments {' +
+    'margin-left: 60px;' +
+  '}' +
+  '.comment {' +
+    'border-top: 1px solid #f0f0f0;' +
+    'padding-top: 5px;' +
+  '}' +
+  '.comment-copy {' +
+    'font-size: 13px;' +
+  '}' +
+  '.comment-text {' +
+    'padding: 5px;' +
+  '}' +
+  '.answer {' +
+    'margin: 20px 0 10px 0' +
+  '}' +
+  '.answercell {' +
+    'border-top: 1px solid #DBD7D7;' +
+    'padding-top: 5px;' +
+  '}' + 
+  '.answer table {' +
+    'width: 100%' +
+  '}' +
+  'blockquote {' +
+    'background-color: #FFF9E3;' +
+    'font-size: 14px;' +
+  '}' +
+  '.user-info {' +
+    'padding: 5px;' +
+  '}' +
+  '.post-taglist {' +
+    'margin-bottom: 10px;' +
+  '}' + 
+  'pre {' +
+    'font-size: 13px;' +
+    'padding: 5px;' +
+    'background-color: #E5E5E5;' +
+    'border: none;' +
+  '}'
+  );
+
+  setHtml($('#content').html());
+}
+%>

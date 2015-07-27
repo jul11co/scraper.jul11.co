@@ -1,0 +1,734 @@
+<%
+function getLinkHostname(url) {
+  if (!url) return '';
+  var url_obj = urlutil.parse(url);
+  var url_hostname = (url_obj) ? url_obj.hostname : '';
+  url_hostname = url_hostname.replace(/(www.)/gm, '');
+  return url_hostname;
+}
+function getLinkText(url, max_length) {
+  var url_short = url;
+  // url_short = url_short.replace(/^(https?|ftp):\/\//, '');
+  if (url_short.length > max_length) {
+    url_short = url_short.substring(0, max_length) + '...';
+  }
+  return url_short;
+}
+function shortenDescriptionIfNecessary(description, max_length) {
+  if (!description) description = '';
+  if (description.length > max_length) {
+    description = description.substring(0, max_length) + '...';
+  }
+  return description;
+}
+function compressScript(script_content) {
+  if (!script_content || script_content == '') return '';
+  // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
+  return script_content;
+}
+function compressTemplate(template_content) {
+  if (!template_content || template_content == '') return '';
+  // template_content = template_content.replace(/(\r\n|\n|\r)/gm, '');
+  return template_content;
+}
+function compressCss(css_content) {
+  if (!css_content || css_content == '') return '';
+  css_content = css_content.replace(/(\r\n|\n|\r)/gm, '');
+  css_content = css_content.replace(/\s\s+/gm, '');
+  css_content = css_content.replace(/\t/gm, '');
+  css_content = css_content.replace(/ {/gm, '{');
+  css_content = css_content.replace(/ :/gm, ':');
+  css_content = css_content.replace(/: /gm, ':');
+  css_content = css_content.replace(/, /gm, ',');
+  css_content = css_content.replace(/; /gm, ';');
+  // css_content = css_content.replace(/;}/gm, '}');
+  return css_content;
+}
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/favicon.ico">
+
+  <title><%=project.name%> - Scraper</title>
+
+  <% include styles %>
+  <link rel="stylesheet" href="/codemirror-5.5/lib/codemirror.css">
+  <link rel="stylesheet" href="/codemirror-5.5/theme/monokai.css">
+
+  <style type="text/css">
+  .navbar {
+    background-color: #9F2274;
+    min-height: 40px;
+  }
+  #sc-main-container {
+    padding-top: 10px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+  .CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
+  }  
+  .sc-result-error {
+    background-color: white;
+    padding: 0;
+    box-shadow: 0 1px 2px rgba(43,59,93,0.29);
+    border-radius: 5px;
+  }
+  .sc-result-error blockquote {
+    margin: 0;
+    background-color: #F31A1A;
+    color: white;
+  }
+  .sc-code-editor-header {
+    background-color: white;
+    height: 50px;
+    padding: 10px;
+    box-shadow: 0 1px 2px rgba(43,59,93,0.29);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+  }
+  .sc-code-editor-header h3 {
+    display: inline;
+    font-size: 24px;
+  }
+  .sc-code-editor-header h3 a {
+    color: #999;
+  }
+  .sc-code-editor {
+    box-shadow: 0 1px 2px rgba(43,59,93,0.29);
+  }
+  </style>
+
+  <style id="sc-page-css" type="text/css">
+<%if (project.style && project.style != '') {%>
+  <%- compressCss(project.style) %>
+<%}%>
+  </style>
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+
+  <a id="back-to-top" href="#" class="btn btn-dark btn-lg toggle"><i class="fa fa-chevron-up"></i></a>
+  
+  <!-- Begin page content -->
+  <div id="sc-main-container" class="container">
+    <div class="row">
+
+      <div class="col-md-12">
+        <h1 class="sc-icon-title"><a href="/">Scraper</a></h1>
+        <form style="display: inline" action="/scraper" method="get">
+          <div class="input-group" style="margin-top: 10px;margin-bottom: 10px;">
+            <input id="sc-input-link" name="link" type="text" class="form-control" placeholder="Enter link here..."
+              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);"
+              value="<%=(link || '')%>">
+            <span class="input-group-btn">
+              <a id="sc-scrape-async" class="btn btn-primary" href="#"
+                style="margin-left: 10px;"><i class="fa fa-play"></i></a>
+              <a id="sc-scrape-alt" class="btn btn-primary hidden" href=""
+                style="margin-left: 10px;">Alt</a>
+              <a id="sc-scrape-json" class="btn btn-success disabled" href="#" target="_blank"
+                style="margin-left: 10px;">JSON</a>
+            </span>
+          </div><!-- /input-group -->
+        </form>
+        <div style="text-align:center;">
+          <div id="sc-scrape-async-loading" class="loader-inline hidden">
+            <img src="/svg/loader.svg" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sc-main-content" class="row hidden">
+
+      <div class="col-md-12" style="margin-top: 20px;margin-bottom: 15px">
+        <div class="btn-group">
+          <a id="sc-scrape-tab-project" href="#" class="btn btn-info btn-sm">Project</a>
+          <a id="sc-scrape-tab-results" href="#" class="btn btn-default btn-sm">Results</a>
+        </div>
+      </div>
+
+      <!-- Scrape Results -->
+      <div id="sc-scrape-results" class="col-md-12 hidden">
+
+        <div id="sc-page-info" class="sc-page-info hidden">
+          <div class="sc-page-header" style="padding-top: 0;">
+            <p class="sc-page-link-hostname"><!-- Page hostname --></p>
+            <h4 class="sc-page-title-wrapper">
+              <a id="sc-page-title" href="" target="blank"><!-- Page title --></a>
+            </h4>
+            <div style="overflow:hidden;">
+              <div class="sc-page-image-wrapper">
+                <img id="sc-page-image" src=""/>
+              </div>
+              <h5 style="margin: 0;line-height: 1.6;">
+                <span id="sc-page-description"><!-- Page description --></span>
+              </h5>
+              <p class="sc-page-url">
+                <i class="fa fa-link"></i> <a id="sc-page-url" href="" target="_blank"><!-- Page URL --></a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="sc-result-error" class="sc-result-error hidden">
+          <blockquote id="sc-result-error-content"></blockquote>
+        </div>
+
+        <div id="sc-page-content" class="sc-page-content hidden"><!-- Page content --></div>
+
+      </div>
+
+      <!-- Scrape Project -->
+      <div id="sc-scrape-project" class="col-md-12 hidden" data-project-id="<%if(project._id){%><%=project._id%><%}%>">
+
+        <div style="margin-top: 10px; margin-bottom: 20px;padding: 10px;border-radius: 5px;background-color: white;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+          <h4 style="margin: 5px 0;font-size: 16px;color: #666"><span style="font-weight: bold;">ID:</span> <%=project._id%></h4>
+          <h4 style="margin: 5px 0;font-size: 16px;color: #666">
+            <span style="font-weight: bold;">Name:</span> <span id="sc-scrape-project-name"><%=project.name%></span> <a id="sc-scrape-project-name-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
+            <div id="sc-scrape-project-name-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
+              <input id="sc-scrape-project-name-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
+                value="<%=project.name%>"
+              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+              <span class="input-group-btn">
+                <a id="sc-scrape-project-name-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
+                <a id="sc-scrape-project-name-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
+              </span>
+            </div>
+          </h4>
+          <h4 style="margin: 5px 0;font-size: 16px;color: #666">
+            <span style="font-weight: bold;">Description:</span> <span id="sc-scrape-project-description"><%=project.description%></span> <a id="sc-scrape-project-description-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
+            <div id="sc-scrape-project-description-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
+              <input id="sc-scrape-project-description-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
+                value="<%=project.description%>"
+              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+              <span class="input-group-btn">
+                <a id="sc-scrape-project-description-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
+                <a id="sc-scrape-project-description-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
+              </span>
+            </div>
+          </h4>
+        </div>
+
+        <!-- Match Editor -->
+        <div class="sc-code-editor-header">
+          <h3>URL Matches</h3>
+          <div style="float:right;">
+            <a id="sc-scrape-match-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-match-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-match-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-match-editor" name="content" placeholder=" Enter script here" 
+            rows="1" class="sc-code-editor"><%=project.url_matches.join('\n')%></textarea>
+        </div>
+
+        <!-- Script Editor -->
+        <div class="sc-code-editor-header">
+          <h3>Script <small><a href="http://ejs.co/" target="_blank">EJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
+          <div style="float:right;">
+            <a id="sc-scrape-script-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-script-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-script-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
+            rows="1" class="sc-code-editor"><%if(project.script){%><%=project.script%><%}%></textarea>
+        </div>
+
+        <!-- Template Editor -->
+        <div class="sc-code-editor-header">
+          <h3>Template <small><a href="http://ejs.co/" target="_blank">EJS</a></small></h3>
+          <div style="float:right;">
+            <a id="sc-scrape-template-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-template-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-template-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-template-editor" name="content" placeholder=" Enter template here" 
+            rows="1" class="sc-code-editor"><%if(project.template){%><%=project.template%><%}%></textarea>
+        </div>
+
+        <!-- CSS Editor -->
+        <div class="sc-code-editor-header">
+          <h3>Style <small><a href="http://www.w3schools.com/css/" target="_blank">CSS</a></small></h3>
+          <div style="float:right;">
+            <a id="sc-scrape-css-apply" class="btn btn-default btn-sm" href="#">Apply</a>
+            <a id="sc-scrape-css-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-css-save" class="btn btn-default btn-sm" href="#">Save</a>
+            <div id="sc-scrape-css-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
+            rows="1" class="sc-code-editor"><%if(project.style){%><%=project.style%><%}%></textarea>
+        </div>
+
+        <div style="height: 50px;padding: 10px;">
+          <div style="float: right;">
+            <a id="sc-scrape-project-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-project-save" class="btn btn-warning btn-sm" href="#">Save all</a>
+            <div id="sc-scrape-project-save-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p class="text-muted">Scraper &copy; 2015 Jul11Co</p>
+      <p class="text-muted">Powered by <a href="https://nodejs.org" target="_blank">NodeJS</a>, <a href="http://expressjs.com/" target="_blank">ExpressJS</a>, <a href="http://ejs.co/" target="_blank">EJS</a>, <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a>, <a href="https://codemirror.net/" target="_blank">CodeMirror</a>, <a href="http://jsbeautifier.org/" target="_blank">JSBeautifier</a>, <a href="http://getbootstrap.com/" target="_blank">Bootstrap</a> <a href="https://bootswatch.com/paper/" target="_blank">Paper</a></p>
+    </div>
+  </footer>
+
+  <% include scripts %>
+  <!-- CodeMirror -->
+  <script src="/codemirror-5.5/lib/codemirror.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/keymap/sublime.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/mode/css/css.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/mode/javascript/javascript.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/mode/htmlmixed/htmlmixed.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/edit/matchbrackets.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/comment/continuecomment.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/comment/comment.js" type="text/javascript"></script>
+  <script src="/codemirror-5.5/addon/selection/selection-pointer.js" type="text/javascript"></script>
+  <!-- JSBeaufity -->
+  <script src="/js-beautify-1.5.10/js/lib/beautify.js" type="text/javascript"></script>
+  <script src="/js-beautify-1.5.10/js/lib/beautify-css.js" type="text/javascript"></script>
+  <script src="/js-beautify-1.5.10/js/lib/beautify-html.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+  function getLinkText(url, max_length) {
+    var url_short = url;
+    if (url_short.length > max_length) {
+      url_short = url_short.substring(0, max_length) + '...';
+    }
+    return url_short;
+  }
+  function shortenDescriptionIfNecessary(description, max_length) {
+    if (!description) description = '';
+    if (description.length > max_length) {
+      description = description.substring(0, max_length) + '...';
+    }
+    return description;
+  }
+  function compressCss(css_content) {
+    if (!css_content || css_content == '') return '';
+    css_content = css_content.replace(/(\r\n|\n|\r)/gm, '');
+    css_content = css_content.replace(/\s\s+/gm, '');
+    css_content = css_content.replace(/\t/gm, '');
+    css_content = css_content.replace(/ {/gm, '{');
+    css_content = css_content.replace(/ :/gm, ':');
+    css_content = css_content.replace(/: /gm, ':');
+    css_content = css_content.replace(/, /gm, ',');
+    css_content = css_content.replace(/; /gm, ';');
+    // css_content = css_content.replace(/;}/gm, '}');
+    return css_content;
+  }
+  function compressTemplate(template_content) {
+    if (!template_content || template_content == '') return '';
+    // template_content = template_content.replace(/(\r\n|\n|\r)/gm, '');
+    return template_content;
+  }
+  function compressScript(script_content) {
+    if (!script_content || script_content == '') return '';
+    // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
+    return script_content;
+  }
+  function scrapeLinkAjax(project_id, link, callback) {
+    $.ajax({
+      url: '/scrape?project=' + project_id + '&link=' + encodeURIComponent(link),
+      type: 'get',
+      dataType : 'json'
+    }).success(function (res){
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
+  }
+  function updateProjectAjax(project_info, callback) {
+    console.log(project_info);
+    $.ajax({
+      url: '/projects/update',
+      type: 'post',
+      data: project_info
+    }).success(function (res){
+      console.log(res);
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
+  }
+  function bindButtons() {
+
+    var mixedMode = {
+      name: "htmlmixed"
+    };
+
+    var matchEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-match-editor"), {
+      lineWrapping: true,
+      mixedMode,
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter"
+    });
+
+    var scriptEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-script-editor"), {
+      lineWrapping: true,
+      mode: 'javascript',
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter"
+    });
+
+    var templateEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-template-editor"), {
+      lineWrapping: true,
+      mixedMode,
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter",
+      selectionPointer: true
+    });
+
+    document.getElementById("sc-scrape-css-editor").innerHTML = 
+      css_beautify(document.getElementById("sc-scrape-css-editor").value);
+
+    var cssEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-css-editor"), {
+      lineWrapping: true,
+      mode: 'css',
+      theme: "monokai",
+      keyMap: "sublime",
+      viewportMargin: Infinity,
+      matchBrackets: true,
+      continueComments: "Enter"
+    });
+
+    var switchTab = function(tab) {
+      if (tab == 'results') {
+        $('#sc-scrape-tab-results').removeClass('btn-default').addClass('btn-info');
+        $('#sc-scrape-tab-project').removeClass('btn-info').addClass('btn-default');
+        $('#sc-scrape-results').removeClass('hidden');
+        $('#sc-scrape-project').addClass('hidden');
+      } else if (tab == 'project') {
+        $('#sc-scrape-tab-results').removeClass('btn-info').addClass('btn-default');
+        $('#sc-scrape-tab-project').removeClass('btn-default').addClass('btn-info');
+        $('#sc-scrape-results').addClass('hidden');
+        $('#sc-scrape-project').removeClass('hidden');
+        matchEditor.refresh();
+        scriptEditor.refresh();
+        templateEditor.refresh();
+        cssEditor.refresh();
+      }
+    }
+
+    var applyCss = function() {
+      var css_content = cssEditor.getValue();
+      css_content = compressCss(css_content);
+      $('#sc-page-css').html(css_content);
+    }
+
+    $('#sc-scrape-tab-results').click(function(e) {
+      e.preventDefault();
+      switchTab('results');
+    });
+
+    $('#sc-scrape-tab-project').click(function(e) {
+      e.preventDefault();
+      switchTab('project');
+    });
+
+    $('#sc-scrape-project-save').on('click', function(e) {
+      e.preventDefault();
+      var match_content = matchEditor.getValue();
+      var script_content = scriptEditor.getValue();
+      var template_content = templateEditor.getValue();
+      var style_content = cssEditor.getValue();
+      var url_matches = match_content.split("\n");
+      var project_info = {
+        url_matches: url_matches,
+        script: compressScript(script_content),
+        template: compressTemplate(template_content),
+        style: compressCss(style_content)
+      };
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        project_info.project_id = project_id;
+        $('#sc-scrape-project-saved').addClass('hidden');
+        $('#sc-scrape-project-save').addClass('hidden');
+        $('#sc-scrape-project-save-loading').removeClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          $('#sc-scrape-project-save-loading').addClass('hidden');
+          $('#sc-scrape-project-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-project-saved').removeClass('hidden');
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-match-save').on('click', function(e) {
+      e.preventDefault();
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        var match_content = matchEditor.getValue();
+        var url_matches = match_content.split("\n");
+        var project_info = {
+          project_id: project_id,
+          url_matches: url_matches
+        };
+        $('#sc-scrape-match-saved').addClass('hidden');
+        $('#sc-scrape-match-save').addClass('hidden');
+        $('#sc-scrape-match-save-loading').removeClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          $('#sc-scrape-match-save-loading').addClass('hidden');
+          $('#sc-scrape-match-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-match-saved').removeClass('hidden');
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-script-save').on('click', function(e) {
+      e.preventDefault();
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        var script_content = scriptEditor.getValue();
+        var project_info = {
+          project_id: project_id,
+          script: compressScript(script_content)
+        };
+        $('#sc-scrape-script-saved').addClass('hidden');
+        $('#sc-scrape-script-save').addClass('hidden');
+        $('#sc-scrape-script-save-loading').removeClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          $('#sc-scrape-script-save-loading').addClass('hidden');
+          $('#sc-scrape-script-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-script-saved').removeClass('hidden');
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-template-save').on('click', function(e) {
+      e.preventDefault();
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        var template_content = templateEditor.getValue();
+        var project_info = {
+          project_id: project_id,
+          template: compressTemplate(template_content)
+        };
+        $('#sc-scrape-template-saved').addClass('hidden');
+        $('#sc-scrape-template-save').addClass('hidden');
+        $('#sc-scrape-template-save-loading').removeClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          $('#sc-scrape-template-save-loading').addClass('hidden');
+          $('#sc-scrape-template-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-template-saved').removeClass('hidden');
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-css-save').on('click', function(e) {
+      e.preventDefault();
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        var style_content = cssEditor.getValue();
+        var project_info = {
+          project_id: project_id,
+          style: compressCss(style_content)
+        };
+        $('#sc-scrape-css-saved').addClass('hidden');
+        $('#sc-scrape-css-save').addClass('hidden');
+        $('#sc-scrape-css-save-loading').removeClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          $('#sc-scrape-css-save-loading').addClass('hidden');
+          $('#sc-scrape-css-save').removeClass('hidden');
+          if (!err) {
+            $('#sc-scrape-css-saved').removeClass('hidden');
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-css-apply').on('click', function(e){
+      e.preventDefault();
+      applyCss();
+      switchTab('results');
+    });
+
+    var scrapeLink = function(link, callback) {
+      $('#sc-result-error').addClass('hidden');
+      $('#sc-scrape-async-loading').removeClass('hidden');
+      $('#sc-main-content').addClass('hidden');
+      switchTab('results');
+      $('#sc-page-content').html('');
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      scrapeLinkAjax(project_id, link, function(err, result) {
+        $('#sc-scrape-async-loading').addClass('hidden');
+        $('#sc-main-content').removeClass('hidden');
+        if (err) {
+          $('#sc-result-error-content').html('Error: ' + err);
+          $('#sc-result-error').removeClass('hidden');
+        }
+        if (!err && result) {
+          console.log(result);
+          if (result.error) {
+            $('#sc-result-error-content').html('Error: ' + result.error);
+            $('#sc-result-error').removeClass('hidden');
+          }
+          if (result.page) {
+            // Update location bar
+            window.history.pushState({}, '<%=project._id%> - Scraper', 
+              '/projects/<%=project._id%>?link=' + encodeURIComponent(result.page.url));
+            // JSON button
+            $('#sc-scrape-json').attr('href', '/scrape?project=' + project_id + 
+              '&link=' + encodeURIComponent(result.page.url));
+            $('#sc-scrape-json').removeClass('disabled');
+            $('#sc-input-link').val(result.page.url);
+            // Page info
+            $('#sc-page-title').html(result.page.title);
+            $('#sc-page-title').attr('href', result.page.url);
+            $('#sc-page-description').html(shortenDescriptionIfNecessary(result.page.description,800));
+            $('#sc-page-image').attr('src', '');
+            $('#sc-page-image').attr('src', result.page.image);
+            $('#sc-page-url').html(getLinkText(result.page.url,80));
+            $('#sc-page-url').attr('href', result.page.url);
+            $('#sc-page-info').removeClass('hidden');
+            // Page content & style
+            $('#sc-page-css').html(result.page.css);
+            $('#sc-page-content').html(result.page.html);
+            $('#sc-page-content').removeClass('hidden');
+          }
+          if (result.project) {
+            $('#sc-scrape-project').attr('data-project-id', result.project.id);
+            matchEditor.getDoc().setValue(result.project.url_matches.join('\n'));
+            scriptEditor.getDoc().setValue(result.project.script);
+            templateEditor.getDoc().setValue(result.project.template);
+            var css_content = css_beautify(result.project.style);
+            cssEditor.getDoc().setValue(css_content);
+          }
+        }
+        if (callback) callback(err, result);
+      });
+    }
+
+    $('#sc-scrape-async').on('click', function(e) {
+      e.preventDefault();
+      var link = $('#sc-input-link').val();
+      if (!link || link === '' || !isValidURL(link)) return;
+      scrapeLink(link);
+    });
+
+    $('#sc-scrape-project-name-edit').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-name-input-group').removeClass('hidden');
+    });
+
+    $('#sc-scrape-project-name-cancel').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-name-input-group').addClass('hidden');
+    });
+
+    $('#sc-scrape-project-name-submit').on('click', function(e) {
+      e.preventDefault();
+      var project_info = {};
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        project_info.project_id = project_id;
+        var project_name = $('#sc-scrape-project-name-input').val();
+        project_info.name = project_name;
+        $('#sc-scrape-project-name-input-group').addClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          if (err) {
+            $('#sc-scrape-project-name-input-group').removeClass('hidden');
+          } else {
+            $('#sc-scrape-project-name').html(project_name)
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-project-description-edit').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-description-input-group').removeClass('hidden');
+    });
+
+    $('#sc-scrape-project-description-cancel').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-description-input-group').addClass('hidden');
+    });
+
+    $('#sc-scrape-project-description-submit').on('click', function(e) {
+      e.preventDefault();
+      var project_info = {};
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        project_info.project_id = project_id;
+        var project_description = $('#sc-scrape-project-description-input').val();
+        project_info.description = project_description;
+        $('#sc-scrape-project-description-input-group').addClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          if (err) {
+            $('#sc-scrape-project-description-input-group').removeClass('hidden');
+          } else {
+            $('#sc-scrape-project-description').html(project_description)
+          }
+        });
+      }
+    });
+
+    var link = $('#sc-input-link').val();
+    if (link && link !== '' || isValidURL(link)) {
+      switchTab('results');
+      scrapeLink(link);
+    } else {
+      $('#sc-main-content').removeClass('hidden');
+      switchTab('project');
+    }    
+  }
+  $(function() {
+    bindButtons();
+  });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+<%
+if (urlMatch('vogue.com')) {
+
+  setScriptFile('vogue_com.ejs');
+
+  removeSelector('.social-sharer');
+  removeSelector('.ad');
+  removeSelector('.comments-loader');
+  removeSelector('.article-share');
+  removeSelector('.ecom-placement');
+  removeSelector('.text-tweet');
+  removeSelector('#comments');
+  removeSelector('.article-content--side-bar');
+  removeSelector('.multi-story__related');
+
+  removeSelector('.expand-marker.expanded-image-marker');
+  removeSelector('.expanded-image');
+
+  removeSelector('div.gallery__inline--header');
+  removeSelector('div.slide-show--slide__template');
+  removeSelector('div.slide-show--slide__template--video');
+  removeSelector('div.slide-show--slide--picture__expanded');
+  removeSelector('.slide-show--see-similar');
+
+  removeSelector('.gallery-marker');
+
+  removeInlineScripts('article');
+  normalizeLinks('article');
+
+  addCss('' +
+  '.article-content--category {' +
+    'display: inline-block;' +
+    'margin: 30px 0 15px;' +
+    'font-weight: bold;' +
+    'text-transform: uppercase;' +
+    'font-size: 13px;' +
+    'line-height: 32px;' +
+    'letter-spacing: 0.12em;' +
+    'border-top: 3px solid #A60505;' +
+  '}' +
+  '.article-content--category a {' +
+    'color: #333;' +
+  '}'
+  );
+
+  addCss('' +
+  '.article-content-meta {' +
+    'overflow: hidden;' +
+  '}' +
+  '.article-content-meta--avatar,' +
+  '.article-content-meta--content {' +
+    'float: left;' +
+  '}' +
+  '.article-content-meta .article-content-meta--avatar {' +
+    'padding-right: 10px;' +
+    'border-bottom: 0;' +
+  '}' +
+  '.article-content-meta--content {' +
+    'height: 50px;' +
+    'padding: 10px 10px 10px 0;' +
+    'margin-bottom: 30px;' +
+    'text-transform: uppercase;' +
+    'font-size: 12px;' +
+    'line-height: 16px;' +
+    'letter-spacing: 1.5px;' +
+  '}' +
+  '.article-content-meta--posted-on {' +
+    'display: block;' +
+    'color: #666;' +
+  '}' +
+  '.article-content-meta--time {' +
+    'color: #7F7F7F;' +
+  '}' +
+  '.article-content-meta--byline {' +
+    'font-style: italic;' +
+    'color: #7F7F7F;' +
+    'text-transform: none;' +
+    'letter-spacing: 0;' +
+  '}' +
+  '.article-content-meta--author {' +
+    'color: #333;' +
+  '}' +
+  '.article-content-meta--divider {' +
+    'margin: 0 10px;' +
+    'color: #ccc;' +
+  '}'
+  );
+
+  addCss('' +
+  '.content-image {' +
+    'text-align: center;' +
+  '}' +
+  '.content-image-caption--wrapper {' +
+    'display: inline-block;' +
+    'max-width: 100%;' +
+    'line-height: 0;' +
+  '}' +
+  '.content-image--wrapper {' +
+    'position: relative;' +
+  '}' +
+  '.expanded-image--wrapper {' +
+    'position: relative;' +
+  '}' +
+  '.content-image--meta {' +
+    'min-height: 30px;' +
+    'padding: 10px 0 10px 0;' +
+    'margin-bottom: 26px;' +
+    'border-bottom: 1px solid #EDEDED;' +
+    'text-align: left;' +
+  '}' +
+  '.content-image--copy {' +
+    'color: #7F7F7F;' +
+    'display: inline;' +
+    'font-size: 14px;' +
+    'line-height: 1.57em;' +
+    'padding-right: 0;' +
+    'text-align: left;' +
+    'width: 84%;' +
+    'min-height: 14px;' +
+  '}' +
+  '.content-image--credit {' +
+    'margin: 0;' +
+    'font-size: 11px;' +
+    'line-height: 14px;' +
+    'margin-top: 9px;' +
+  '}'
+  );
+
+  addCss('' +
+  '.gallery__inline {' +
+    'position: relative;' +
+    'width: 100%;' +
+    'clear: both;' +
+    'margin: 20px 0;' +
+    'border-top: 2px solid #EDEDED;' +
+    'border-bottom: 2px solid #EDEDED;' +
+    'padding: 20px 0;' +
+  '}' +
+  '.slide-show--slide--caption--credit {' +
+    'font-size: 11px;' +
+    'margin-top: 5px;' +
+    'line-height: 14px;' +
+    'color: #7F7F7F;' +
+    'margin-bottom: 0;' +
+    'padding-right: 0;' +
+  '}' +
+  '.slide-show--slide__temporary {' +
+    'padding-top: 20px;' +
+    'padding-bottom: 20px;' +
+  '}'
+  );
+
+  addCss('' +
+  '.article-tags {' +
+    'line-height: 18px;' +
+    'padding: 30px 0;' +
+    'border-top: 6px solid #000;' +
+    'border-bottom: 1px solid #EDEDED;' +
+  '}' +
+  '.article-tags--items {' +
+    'padding-left: 0;' +
+    'display: inline;' +
+  '}' +
+  '.article-tags--item {' +
+    'text-transform: uppercase;' +
+    'letter-spacing: 0.120em;' +
+    'font-size: 14px;' +
+    'line-height: 18px;' +
+    'display: inline;' +
+  '}' +
+  '.article-tags--item a {' +
+    'color: #A60505;' +
+    'border: 0;' +
+  '}' +
+  '.article-tags--item:after {' +
+    'content: ",";' +
+  '}'
+  );
+
+  setHtml($('article').html());
+}
+%>

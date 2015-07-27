@@ -1,0 +1,94 @@
+<%
+if (urlMatch('thenextweb.com')) {
+
+  setScriptFile('thenextweb_com.ejs');
+
+  removeSelector('#announcement');
+
+  removeSelector('.l-postSingle-content-main-share');
+  removeSelector('.articleShare-shortlink-comments');
+  removeSelector('.l-postSingle-content-main-related');
+  removeSelector('.l-postSingle-content-main-comments');
+  removeSelector('.authorBlock');
+
+  removeSelector('#ad-unit-top');
+  removeSelector('#ad-unit-sharethrough');
+  removeSelector('#ad-unit-bottom');
+  removeSelector('#ad-unit-bottom-2');
+
+  removeSelector('.socialBlock');
+
+  removeSelector('.meta img');
+  removeSelector('.meta.articleMeta.js_articleShare');
+  removeSelector('.meta .mail');
+  removeSelector('.meta .tweet');
+
+  removeSelector('#deals');
+
+  $('img').each(function() {
+    $(this).removeAttr('width');
+    $(this).removeAttr('height');
+  });
+
+  removeInlineScripts('#main');
+  normalizeLinks('#main');
+
+  addCss('' +
+  'h3.meta {' +
+    'font-size: 14px;' +
+    'margin-top: 10px;' +
+    'margin-bottom: 10px;' +
+  '}' +
+  '.postMicro {' +
+    'color: #2196f3;' +
+  '}' +
+  '.postMicro-title {' +
+    'font-size: 14px;' +
+    'color: #2196f3;' +
+    'margin-top: 10px;' +
+    'margin-bottom: 5px;' +
+  '}' +
+  '.sidebar-block-title {' +
+    'font-size: 16px;' +
+  '}' +
+  '.sidebar-block-subtitle {' +
+    'font-size: 14px;' +
+    'margin-top: 10px;' +
+    'margin-bottom: 5px;' +
+  '}' +
+  '.l-postSingle-content-main-photo {' +
+    'background-position: center center;' +
+    'background-size: cover;' +
+    'display: block;' +
+    'height: 0;' +
+    'overflow: hidden;' +
+    'width: 100%;' +
+    'box-shadow: inset 0 1px 0 rgba(0,0,0,0.1);' +
+    'padding-top: 50%;' +
+    'position: relative;' +
+  '}'
+  );
+  addCss('' +
+  '.channelHeader h1 {' +
+    'display: inline;' +
+  '}' +
+  '.pager a {' +
+    'display: block;' +
+    'padding: 0.5em;' +
+    'float: left;' +
+  '}' +
+  '.pager a span {' +
+    'position: relative;' +
+    'left: 0;' +
+    'right: 0;' +
+  '}' +
+  '.pager a.pager-right {' +
+    'text-align: right;' +
+    'float: right;' +
+    'border-left: 1px solid #fff;' +
+  '}'
+  );
+
+  setHtml($('#main').html());
+}
+%>

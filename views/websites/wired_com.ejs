@@ -1,0 +1,80 @@
+<%
+if (urlMatch('wired.com')) {
+
+  setScriptFile('wired_com.ejs');
+
+  removeSelector('#o-gallery');
+  removeSelector('.skip-to-text-link');
+  removeSelector('.visually-hidden');
+  removeSelector('#sharing');
+  removeSelector('.sidebar-rad');
+
+  removeSelector('.hide-med');
+
+  removeSelector('#sidebar');
+  removeSelector('#fb-share');
+  removeSelector('#twitter-share');
+  removeSelector('#pint-share');
+  removeSelector('#mail-share');
+
+  removeInlineScripts('#main');
+  normalizeLinks('#main');
+
+  addCss('' +
+  '.inline-block {' +
+    'display: inline-block;' +
+  '}' +
+  '.marg-r-sm {' +
+    'margin-right: 8px;' +
+  '}' +
+  '#latest-news-list {' +
+    'list-style: none;' +
+  '}' +
+  '.col {' +
+    'float: left;' +
+    'margin-right: 16px;' +
+    'min-width: 0;' +
+    'position: relative;' +
+  '}' +
+  '.thumb {' +
+    'max-width: 75px;' +
+  '}' +
+  '.big-col-6 {' +
+    'width: calc(33% + -11.667px);' +
+  '}' +
+  '.byline, .credit, .metadata, .metatitle, .attribution, .oxide, .oxide li:before, .lede, .pagination {' +
+    'font-style: normal;' +
+    'font-weight: 400;' +
+    'letter-spacing: .08em;' +
+    'text-transform: uppercase;' +
+  '}' +
+  '#post-header ul,' +
+  '#article-tags {' +
+    'padding-left: 0;' +
+  '}' +
+  '#article-tags li {' +
+    'display: inline-block;' +
+  '}' +
+  '.no-underline a {' +
+    'border-bottom: 0;' +
+    'box-shadow: none;' +
+    'border: 1px solid;' +
+    'padding: 5px;' +
+  '}' +
+  '.pad-t-med {' +
+    'padding-top: 16px;' +
+  '}' +
+  '.pad-r-sm {' +
+    'padding-right: 8px;' +
+  '}'
+  );
+  addCss('' +
+  '#article-tags li a {' +
+    'border: 1px solid;' +
+    'padding: 3px;' +
+  '}'
+  );
+
+  setHtml($('#main').html());
+}
+%>

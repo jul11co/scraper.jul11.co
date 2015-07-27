@@ -1,0 +1,23 @@
+<%
+if (urlMatch('buzzfeed.com')) {
+
+  setScriptFile('buzzfeed_com.ejs');
+
+  $('img').each(function() {
+    var ref_src = $(this).attr('rel:bf_image_src');
+    if (ref_src) {
+      $(this).attr('src', ref_src);
+    }
+    $(this).removeAttr('width');
+    $(this).removeAttr('height');
+  });
+
+  removeSelector('section.bottom_shares');
+  removeSelector('.print');
+
+  removeInlineScripts('div.buzz');
+  normalizeLinks('div.buzz');
+
+  setHtml($('div.buzz').html());
+}
+%>

@@ -1,0 +1,111 @@
+<%
+if (urlMatch('9to5mac.com') || urlMatch('9to5google.com') 
+  || urlMatch('9to5toys.com')) {
+
+  setScriptFile('9to5mac_com.ejs');
+
+  $('img').each(function() {
+    $(this).removeAttr('width');
+    $(this).removeAttr('height');
+  });
+
+  removeSelector('.breadcrumbs');
+
+  removeSelector('.avatar');
+  removeSelector('.twittername');
+  removeSelector('.share-comments-list');
+
+  removeSelector('.community-article-meta-cta');
+
+  removeSelector('#respond');
+  removeSelector('.social-bar');
+  removeSelector('#jp-post-flair');
+  removeSelector('#author-ad');
+
+  removeSelector('#comments');
+  removeSelector('#comment-navigation');
+  removeSelector('.commentlist');
+
+  removeSelector('.related');
+
+  addCss('' +
+  '.tiled-gallery .tiled-gallery-item img,' +
+  '.tiled-gallery .tiled-gallery-item img:hover {' +
+    'background: none;' +
+    'border: none;' +
+    'box-shadow: none;' +
+    'max-width: 100%;' +
+    'padding: 0;' +
+    'vertical-align: middle;' +
+  '}' +
+  '.tiled-gallery img {' +
+    'margin: 2px !important;' +
+  '}' +
+  '.tiled-gallery .tiled-gallery-item {' +
+    'float: left;' +
+    'margin: 0;' +
+    'position: relative;' +
+    'width: inherit;' +
+  '}' +
+  '.tiled-gallery .gallery-group {' +
+    'float: left;' +
+    'position: relative;' +
+  '}' +
+  'summary.story-meta .tags {' +
+    'margin: 1em 0;' +
+    'padding: 0;' +
+    'font-size: 0.9em;' +
+  '}' +
+  'summary.story-meta .tags li {' +
+    'position: relative;' +
+    'background-color: #ececec;' +
+    'margin: .25em .5em .25em 0;' +
+    'display: -moz-inline-stack;' +
+    'display: inline-block;' +
+    'zoom: 1;' +
+  '}' +
+  'summary.story-meta .tags li a {' +
+    'padding-left: 5px;' +
+    'padding-right: 5px;' +
+  '}' +
+  'summary.story-meta nav li {' +
+    'background-image: none;' +
+    'padding-left: 0;' +
+    'padding-top: 0;' +
+    'padding-bottom: 0;' +
+    'display: inline-block;' +
+    'zoom: 1;' +
+  '}' +
+  '.article-meta .categories {' +
+    'margin: 0;' +
+    'padding: 0;' +
+    'display: inline;' +
+  '}' +
+  '.article-meta .categories li {' +
+    'display: inline;' +
+    'list-style-type: none;' +
+    'padding-left: 0.3em;' +
+    'padding-right: 0.3em;' +
+  '}' +
+  '.article-meta .categories a {' +
+    'color: #ccc;' +
+  '}'
+  );
+
+  if ($('.content > article.post').length != 0) {
+
+    removeInlineScripts('article');
+    normalizeLinks('article');
+
+    setHtml($('article').html());
+  } else {
+
+    removeSelector('.widget_ninetofive_author_ad');
+
+    removeInlineScripts('.main-content');
+    normalizeLinks('.main-content');
+
+    setHtml($('.main-content').html());
+  }
+}
+%>

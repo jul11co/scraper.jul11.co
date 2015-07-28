@@ -77,6 +77,10 @@ function requestWithEncoding(options, callback) {
   });
 }
 
+function readScriptFileSync(script_file) {
+  return fs.readFileSync(configPath.rootPath + '/views/websites/' + script_file, 'utf-8');
+}
+
 // options: 
 // {
 //   url: String,
@@ -186,7 +190,8 @@ function scrapeInternal(options, callback) {
             // console.log(job);
 
             // append job script & template to template
-            template += job.script;
+            if (job.script != '') job.script = job.script.replace(/(<%|%>)/gm, '');
+            template += '<%' + job.script + '%>';
             if (job.template == '') {
               job.template = '<%-page.html%>';
             }
@@ -209,8 +214,7 @@ function scrapeInternal(options, callback) {
               $: $,
               cheerio: cheerio,
               urlutil: urlutil,
-              fs: fs,
-              rootPath: configPath.rootPath,
+              readScriptFileSync: readScriptFileSync,
               override_url: options.override_url
             });
           } catch (e) {
@@ -246,8 +250,7 @@ exports.showScraper2Page = function(req, res) {
       link_html: '',
       cheerio: cheerio,
       urlutil: urlutil,
-      fs: fs,
-      rootPath: configPath.rootPath
+      readScriptFileSync: readScriptFileSync
     });
   }
   requestWithEncoding(
@@ -267,7 +270,6 @@ exports.showScraper2Page = function(req, res) {
           link_html: null,
           cheerio: cheerio,
           urlutil: urlutil,
-          fs: fs,
           rootPath: configPath.rootPath
         });
       }
@@ -285,7 +287,6 @@ exports.showScraper2Page = function(req, res) {
           link_html: '',
           cheerio: cheerio,
           urlutil: urlutil,
-          fs: fs,
           rootPath: configPath.rootPath
         });
       }
@@ -299,7 +300,6 @@ exports.showScraper2Page = function(req, res) {
         link_html: html,
         cheerio: cheerio,
         urlutil: urlutil,
-        fs: fs,
         rootPath: configPath.rootPath
       });
     }
@@ -425,7 +425,8 @@ function runScrapeProject(project, options, callback) {
         page.css = project.style;
 
         // append project script & template to template
-        template += project.script;
+        if (project.script != '') project.script = project.script.replace(/(<%|%>)/gm, '');
+        template += '<%' + project.script + '%>';
         if (project.template == '') {
           project.template = '<%-page.html%>';
         }
@@ -439,8 +440,6 @@ function runScrapeProject(project, options, callback) {
             $: $,
             cheerio: cheerio,
             urlutil: urlutil,
-            fs: fs,
-            rootPath: configPath.rootPath,
             override_url: options.override_url
           });
         } catch (e) {

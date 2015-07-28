@@ -175,7 +175,7 @@ if (link_html && cheerio) {
     }
   }
   if (page_script_file != '') {
-    page_script = fs.readFileSync(rootPath + '/views/websites/' + page_script_file, 'utf-8');
+    page_script = readScriptFileSync(page_script_file);
   }
 }
 %>

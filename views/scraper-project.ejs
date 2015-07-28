@@ -126,7 +126,7 @@ function compressCss(css_content) {
 
       <div class="col-md-12">
         <h1 class="sc-icon-title"><a href="/">Scraper</a></h1>
-        <form style="display: inline" action="/scraper" method="get">
+        <form id="sc-input-form" style="display: inline" action="/projects/<%=project._id%>" method="get">
           <div class="input-group" style="margin-top: 10px;margin-bottom: 10px;">
             <input id="sc-input-link" name="link" type="text" class="form-control" placeholder="Enter link here..."
               style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);"
@@ -238,7 +238,7 @@ function compressCss(css_content) {
 
         <!-- Script Editor -->
         <div class="sc-code-editor-header">
-          <h3>Script <small><a href="http://ejs.co/" target="_blank">EJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
+          <h3>Script <small><a href="https://nodejs.org" target="_blank">NodeJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
           <div style="float:right;">
             <a id="sc-scrape-script-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
             <a id="sc-scrape-script-save" class="btn btn-default btn-sm" href="#">Save</a>
@@ -358,6 +358,7 @@ function compressCss(css_content) {
   }
   function compressScript(script_content) {
     if (!script_content || script_content == '') return '';
+    script_content = script_content.replace(/(<\%|\%>)/gm, '');
     // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
     return script_content;
   }
@@ -387,7 +388,7 @@ function compressCss(css_content) {
       callback(err);
     });
   }
-  function bindButtons() {
+  $(function() {
 
     var mixedMode = {
       name: "htmlmixed"
@@ -651,10 +652,25 @@ function compressCss(css_content) {
       });
     }
 
+    $('#sc-input-form').submit(function(e) {
+      e.preventDefault();
+      var link = $('#sc-input-link').val();
+      if (!link || link === '') return;
+      if (!isValidURL(link)) {
+        link = 'http://' + link;
+        $('#sc-input-link').val(link);
+      }
+      scrapeLink(link);
+    });
+
     $('#sc-scrape-async').on('click', function(e) {
       e.preventDefault();
       var link = $('#sc-input-link').val();
-      if (!link || link === '' || !isValidURL(link)) return;
+      if (!link || link === '') return;
+      if (!isValidURL(link)) {
+        link = 'http://' + link;
+        $('#sc-input-link').val(link);
+      }
       scrapeLink(link);
     });
 
@@ -717,16 +733,17 @@ function compressCss(css_content) {
     });
 
     var link = $('#sc-input-link').val();
-    if (link && link !== '' || isValidURL(link)) {
+    if (link && link !== '') {
+      if (!isValidURL(link)) {
+        link = 'http://' + link;
+        $('#sc-input-link').val(link);
+      }
       switchTab('results');
       scrapeLink(link);
     } else {
       $('#sc-main-content').removeClass('hidden');
       switchTab('project');
-    }    
-  }
-  $(function() {
-    bindButtons();
+    }
   });
   </script>
 

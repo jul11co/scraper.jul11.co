@@ -75,7 +75,7 @@
 
       <div class="col-md-12">
         <h1 class="sc-icon-title"><a href="/">Playground</a></h1>
-        <form style="display: inline" action="/scraper" method="get">
+        <form id="sc-input-form" style="display: inline" action="/playground" method="get">
           <div class="input-group" style="margin-top: 10px;margin-bottom: 10px;">
             <input id="sc-input-link" name="link" type="text" class="form-control" placeholder="Enter link here..."
               style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);"
@@ -148,7 +148,7 @@
 
         <!-- Script Editor -->
         <div class="sc-code-editor-header">
-          <h3>Script <small><a href="http://ejs.co/" target="_blank">EJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
+          <h3>Script <small><a href="https://nodejs.org" target="_blank">NodeJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
         </div>
         <div>
           <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
@@ -236,6 +236,7 @@
   }
   function compressScript(script_content) {
     if (!script_content || script_content == '') return '';
+    script_content = script_content.replace(/(<\%|\%>)/gm, '');
     // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
     return script_content;
   }
@@ -264,7 +265,7 @@
       name: "htmlmixed"
     };
 
-    $('#sc-scrape-script-editor').html("<\%\npage.content = $('body').html();\n\%>");
+    $('#sc-scrape-script-editor').html("page.content = $('body').html();");
     $('#sc-scrape-template-editor').html("<\%-page.content\%>");
 
     var matchEditor = CodeMirror.fromTextArea(document.getElementById("sc-scrape-match-editor"), {
@@ -403,10 +404,26 @@
       });
     }
 
+    $('#sc-input-form').submit(function(e) {
+      var link = $('#sc-input-link').val();
+      if (!link || link === '') {
+        e.preventDefault();
+      } else if (!isValidURL(link)) {
+        link = 'http://' + link;
+        $('#sc-input-link').val(link);
+      }
+      e.preventDefault();
+      scrapeLinkTest(link);
+    });
+
     $('#sc-scrape-test-async').on('click', function(e) {
       e.preventDefault();
       var link = $('#sc-input-link').val();
-      if (!link || link === '' || !isValidURL(link)) return;
+      if (!link || link === '') return;
+      if (!isValidURL(link)) {
+        link = 'http://' + link;
+        $('#sc-input-link').val(link);
+      }
       scrapeLinkTest(link);
     });
 

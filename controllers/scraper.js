@@ -20,30 +20,50 @@ exports.showScraperPage = function(req, res) {
     //   job: {},
     //   urlutil: urlutil
     // });
-    return res.render('scraper-main.ejs', {
-      user: req.user
+    // return res.render('scraper-main.ejs', {
+    //   user: req.user
+    // });
+    Projects.getProjectsInternal(req.user, {}, function(err, result) {
+      if (err) {
+        console.log(err);
+        return res.render('scraper-main.ejs', {
+          user: req.user,
+          top_projects: []
+        });
+      }
+      // Sort projects by last update
+      result.projects.sort(function(a, b){
+        var dateA = new Date(a.last_update),
+        dateB = new Date(b.last_update);
+        return dateB-dateA;
+      });
+      return res.render('scraper-main.ejs', {
+        user: req.user,
+        top_projects: result.projects
+      });
     });
-  }
-  scrapeInternal({ 
-    url: req.query.link,
-    override_url: '/scraper?link='
-  }, function(err, result) {
-    if(err){
-      console.log(err);
+  } else {
+    scrapeInternal({ 
+      url: req.query.link,
+      override_url: '/scraper?link='
+    }, function(err, result) {
+      if(err){
+        console.log(err);
+        return res.render('scraper-view.ejs', {
+          user: req.user,
+          page: { url: req.query.link },
+          job: {},
+          urlutil: urlutil
+        });
+      }
       return res.render('scraper-view.ejs', {
         user: req.user,
-        page: { url: req.query.link },
-        job: {},
+        page: result.page,
+        job: result.job,
         urlutil: urlutil
       });
-    }
-    return res.render('scraper-view.ejs', {
-      user: req.user,
-      page: result.page,
-      job: result.job,
-      urlutil: urlutil
     });
-  });
+  }
 }
 
 function requestWithEncoding(options, callback) {
@@ -112,13 +132,6 @@ function scrapeInternal(options, callback) {
         css: '',
         links: []
       };
-      var job = {
-        id: '',
-        url_matches: [],
-        script: '',
-        template: '',
-        style: ''
-      };
 
       page.url = response.request.href;
       console.log("URL: " + page.url);
@@ -161,6 +174,14 @@ function scrapeInternal(options, callback) {
       console.log('Page title: ' + page.title);
       console.log('Page description: ' + page.description);
   
+      var job = {
+        id: '',
+        url_matches: [],
+        script: '',
+        template: '',
+        style: ''
+      };
+
       Jobs.matchJobInternal(page.url, function(err, jobs) {
         if (err) {
           console.log(err);
@@ -184,24 +205,32 @@ function scrapeInternal(options, callback) {
             job.template = jobs[0].template;
             job.style = jobs[0].style;
 
-            page.css = job.style;
-
             // console.log('Matched Job [0]: ');
             // console.log(job);
 
-            // append job script & template to template
-            if (job.script != '') job.script = job.script.replace(/(<%|%>)/gm, '');
-            template += '<%' + job.script + '%>';
-            if (job.template == '') {
-              job.template = '<%-page.html%>';
-            }
-            template += job.template;
-          } else {
-            if (!options.no_default || options.no_default !== 'yes') {
-              template += '<%postProcess();%>';
-            }
-            template += '<%-page.html%>';
+          } else if (!options.no_default || options.no_default !== 'yes') {
+            // job.script = '<%postProcess();%>';
+            job.script = '' +
+              'if ($(\'article\').length) {\n' +
+              '  $(\'article script\').remove();\n' +
+              '  page.content = $(\'article\').html();\n' +
+              '} else {\n' +
+              '  $(\'body script\').remove();\n' +
+              '  page.content = $(\'body\').html();\n' +
+              '}'
+            ;
+            job.template = '<%-page.content%>';
           }
+
+          page.css = job.style;
+
+          // append job script & template to template
+          if (job.script != '') job.script = job.script.replace(/(<%|%>)/gm, '');
+          template += '<%' + job.script + '%>';
+          if (job.template == '') {
+            job.template = '<%-page.html%>';
+          }
+          template += job.template;
 
           // console.log('Template:');
           // console.log(template);
@@ -422,8 +451,6 @@ function runScrapeProject(project, options, callback) {
           return callback(new Error('Reading template file failed'));
         }
 
-        page.css = project.style;
-
         // append project script & template to template
         if (project.script != '') project.script = project.script.replace(/(<%|%>)/gm, '');
         template += '<%' + project.script + '%>';
@@ -431,6 +458,8 @@ function runScrapeProject(project, options, callback) {
           project.template = '<%-page.html%>';
         }
         template += project.template;
+
+        page.css = project.style;
 
         var resultHtml = '';
         try {

@@ -72,29 +72,36 @@ exports.getProjectById = function(project_id, callback) {
 // GET /projects/list
 exports.getProjects = function(req, res) {
   console.log('Get projects');
-  if (typeof req.user == 'undefined') {
+  exports.getProjectsInternal(req.user, {}, function(err, result) {
+    if (err) return res.json({error: err});
+    res.json({projects: result.projects});
+  });
+}
+
+exports.getProjectsInternal = function(user, options, callback) {
+  if (typeof user == 'undefined') {
     // Public projects
     Project.find({}, function(err, projects) {
-      if (err) return res.json({error: err});
+      if (err) return callback(err);
       // Sort projects by created time
       projects.sort(function(a, b){
         var dateA = new Date(a.created_at),
         dateB = new Date(b.created_at);
         return dateB-dateA;
       });
-      res.json({projects: projects});
+      callback(null, {projects: projects});
     });
   } else {
     // Private projects
-    Project.find({ owner: req.user._id.toString() }, function(err, projects) {
-      if (err) return res.json({error: err});
+    Project.find({ owner: user._id.toString() }, function(err, projects) {
+      if (err) return callback(err);
       // Sort projects by created time
       projects.sort(function(a, b){
         var dateA = new Date(a.created_at),
         dateB = new Date(b.created_at);
         return dateB-dateA;
       });
-      res.json({projects: projects});
+      callback(null, {projects: projects});
     });
   }
 }
@@ -184,10 +191,10 @@ exports.updateProject = function(req, res) {
         }
       });
     }
+    
     var update_data = {
       last_update: new Date()
-    };
-    
+    };    
     if (req.body.name) update_data.name = req.body.name;
     if (req.body.description) update_data.description = req.body.description;
     if (req.body.url_matches) update_data.url_matches = req.body.url_matches;

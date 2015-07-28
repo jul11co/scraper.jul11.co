@@ -77,7 +77,9 @@ exports.updateJob = function(req, res) {
         }
       });
     }
-    var update_data = {};
+    var update_data = {
+      last_update: new Date()
+    };
     if (req.body.url_matches) update_data.url_matches = req.body.url_matches;
     if (req.body.script) update_data.script = req.body.script;
     if (req.body.template) update_data.template = req.body.template;

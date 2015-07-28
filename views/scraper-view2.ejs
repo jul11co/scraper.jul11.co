@@ -13,13 +13,16 @@ var page_images = [];
 var page_url_matches = [];
 var page_script = '';
 var page_template = '';
-
+%>
+<%
 function getLinkHostname(url) {
   if (!url) return '';
   var url_obj = urlutil.parse(url);
   var url_hostname = (url_obj) ? url_obj.hostname : '';
-  url_hostname = url_hostname.replace(/(www.)/gm, '');
-  return url_hostname;
+  if (url_hostname) {
+    url_hostname = url_hostname.replace(/(www.)/gm, '');
+  }
+  return (url_hostname || '');
 }
 function getLinkText(url, max_length) {
   var url_short = url;
@@ -668,14 +671,13 @@ function compressCss(css_content) {
     });
 
     $('#sc-input-form').submit(function(e) {
-      e.preventDefault();
       var link = $('#sc-input-link').val();
-      if (!link || link === '') return;
-      if (!isValidURL(link)) {
+      if (!link || link === '') {
+        e.preventDefault();
+      } else if (!isValidURL(link)) {
         link = 'http://' + link;
         $('#sc-input-link').val(link);
       }
-      scrapeLink(link);
     });
 
     $('#sc-page-links-show-hide').on('click', function(e) {

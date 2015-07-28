@@ -1,7 +1,56 @@
 <%
+var urlGetHost = function(_url) {
+  if (!_url || _url == '') return '';
+  var host_url = '';
+  var url_obj = urlutil.parse(_url);
+  if (url_obj.slashes) {
+    host_url = url_obj.protocol + '//' + url_obj.host;
+  } else {
+    host_url = url_obj.protocol + url_obj.host;
+  }
+  return host_url;
+}
+var fixLinks = function(_selector, options) {
+  var page_host_url = '';
+  if (options && options.host_url && options.host_url !== '') {
+    page_host_url = options.host_url;
+  } else {
+    page_host_url = urlGetHost(page.url);
+  }
+  var page_host_url_obj = urlutil.parse(page_host_url);
+  $('' + _selector + ' a').each(function(){
+    var link_href = $(this).attr('href');
+    if (link_href && link_href != "") {
+      if (link_href.indexOf('#') == 0 
+        || link_href.indexOf('mailto:') >= 0 
+        || link_href.indexOf('javascript:') == 0) {
+        return;
+      }
+      var link_url = link_href;
+      link_url = link_url.replace('http:///', '/');
+      link_url = link_url.replace('http://', '/');
+      link_url = link_url.replace('http:/', '/');
+      link_url = link_url.replace('https:///', '/');
+      link_url = link_url.replace('https://', '/');
+      link_url = link_url.replace('https:/', '/');
+      var link_url_obj = urlutil.parse(link_url);
+      if (!link_url_obj.host) {
+        link_url = urlutil.resolve(page_host_url_obj, link_url_obj);
+        // $(this).attr('href', link_url);
+      } else {
+       link_url = urlutil.format(link_url_obj);
+      }
+      $(this).attr('href', link_url);
+    }
+  });
+}
 var normalizeLinks = function(_selector, options) {
-  var page_url_obj = urlutil.parse(page.url);
-  var page_host_url = page.url.replace(page_url_obj.path, '');
+  var page_host_url = '';
+  if (options && options.host_url && options.host_url !== '') {
+    page_host_url = options.host_url;
+  } else {
+    page_host_url = urlGetHost(page.url);
+  }
   var page_host_url_obj = urlutil.parse(page_host_url);
   var excludes = [];
   if (options && options.excludes && Array.isArray(options.excludes)) {
@@ -27,9 +76,15 @@ var normalizeLinks = function(_selector, options) {
         }
         if (excluded) return;
       }
-      var link_url = link_href.replace('http:///', '/');
+      var link_url = link_href;
       var link_url_obj = urlutil.parse(link_url);
       if (!link_url_obj.host) {
+        link_url = link_url.replace('http:///', '/');
+        link_url = link_url.replace('http://', '/');
+        link_url = link_url.replace('http:/', '/');
+        link_url = link_url.replace('https:///', '/');
+        link_url = link_url.replace('https://', '/');
+        link_url = link_url.replace('https:/', '/');
         // console.log('Empty host: ' + link_url);
         link_url = urlutil.resolve(page_host_url_obj, link_url_obj);
         if (!override_url || override_url == '') {
@@ -40,8 +95,10 @@ var normalizeLinks = function(_selector, options) {
       }
       if (override_url) {
         $(this).attr('href', override_url + encodeURIComponent(link_url));
+      } else if (options && options.override_url) {
+        $(this).attr('href', options.override_url + encodeURIComponent(link_url));
       }
-      // page.links.push(link_url);
+      page.links.push(link_url);
     }
   });
 }
@@ -99,17 +156,7 @@ var setHtml = function(_html) {
 var setScriptFile = function(script_file) {
   page.script_file = script_file;
 }
-var postProcess = function() {
-  if (page.html == '') {
-    if ($('article').length) {
-      removeInlineScripts('article');
-      normalizeLinks('article');
-      page.html = $('article').html(); 
-    } else {
-      removeInlineScripts('body');
-      normalizeLinks('body');
-      page.html = $('body').html();
-    }
-  }
-}
+%>
+<%
+fixLinks('body');
 %>

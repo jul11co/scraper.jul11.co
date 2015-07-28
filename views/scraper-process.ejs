@@ -112,6 +112,23 @@ if (link_html && cheerio) {
   var setScriptFile = function(script_file) {
     page_script_file = script_file;
   }
+
+  var postProcess = function() {
+    if (page_html == '') {
+      if ($('article').length) {
+        removeInlineScripts('article');
+        normalizeLinks('article');
+        page_html = $('article').html(); 
+      } else {
+        removeInlineScripts('body');
+        normalizeLinks('body');
+        page_html = $('body').html();
+      }
+    }
+    if (page_script_file != '') {
+      page_script = readScriptFileSync(page_script_file);
+    }
+  }
 %>
 
   <%include websites/wikipedia_org%>
@@ -163,19 +180,6 @@ if (link_html && cheerio) {
   <%include websites/truyentranh8_net%>  
 
 <%
-  if (page_html == '') {
-    if ($('article').length) {
-      removeInlineScripts('article');
-      normalizeLinks('article');
-      page_html = $('article').html(); 
-    } else {
-      removeInlineScripts('body');
-      normalizeLinks('body');
-      page_html = $('body').html();
-    }
-  }
-  if (page_script_file != '') {
-    page_script = readScriptFileSync(page_script_file);
-  }
+  postProcess();
 }
 %>

@@ -3,8 +3,10 @@ function getLinkHostname(url) {
   if (!url) return '';
   var url_obj = urlutil.parse(url);
   var url_hostname = (url_obj) ? url_obj.hostname : '';
-  url_hostname = url_hostname.replace(/(www.)/gm, '');
-  return url_hostname;
+  if (url_hostname) {
+    url_hostname = url_hostname.replace(/(www.)/gm, '');
+  }
+  return (url_hostname || '');
 }
 function getLinkText(url, max_length) {
   var url_short = url;
@@ -76,6 +78,18 @@ function compressCss(css_content) {
   .CodeMirror {
     border: 1px solid #eee;
     height: auto;
+  }
+  .sc-result-error {
+    background-color: white;
+    padding: 0;
+    box-shadow: 0 1px 2px rgba(43,59,93,0.29);
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  .sc-result-error blockquote {
+    margin: 0;
+    background-color: #F31A1A;
+    color: white;
   }
   .sc-code-editor-header {
     background-color: white;
@@ -180,11 +194,15 @@ function compressCss(css_content) {
           </div>
         </div>
 
-<%if (page.html && page.html != '') {%>
-        <div id="sc-page-content" class="sc-page-content">
-          <%- page.html %>
+        <div id="sc-result-error" class="sc-result-error<%if(!error){%> hidden<%}%>">
+          <blockquote id="sc-result-error-content"><%if(error){%>Error: <%=error%><%}%></blockquote>
         </div>
+
+        <div id="sc-page-content" class="sc-page-content">
+<%if (page.html && page.html != '') {%>
+          <%- page.html %>
 <%}%>
+        </div>
       </div>
 
       <!-- Scrape Job -->
@@ -264,6 +282,10 @@ function compressCss(css_content) {
 
         <div style="height: 50px;padding: 10px;">
           <div style="float: right;">
+            <a id="sc-scrape-project-fork" class="btn btn-default btn-sm" href="#">Fork this project</a>
+            <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
             <a id="sc-scrape-job-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
             <a id="sc-scrape-job-save" class="btn btn-warning btn-sm" href="#">Save all</a>
             <div id="sc-scrape-job-save-loading" class="loader-inline hidden">
@@ -345,7 +367,21 @@ function compressCss(css_content) {
       type: 'get',
       dataType : 'json'
     }).success(function (res){
-      // console.log(res);
+      console.log(res);
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
+  }  
+  function addProjectAjax(project_info, callback) {
+    console.log('Add project');
+    console.log(project_info);
+    $.ajax({
+      url: '/projects/add',
+      type: 'post',
+      data: project_info
+    }).success(function (res){
       callback(null, res);
     }).error (function (err){
       console.log(err);
@@ -465,6 +501,35 @@ function compressCss(css_content) {
       scriptEditor.refresh();
       templateEditor.refresh();
       cssEditor.refresh();
+    });
+
+    $('#sc-scrape-project-fork').on('click', function(e) {
+      e.preventDefault();
+      var match_content = matchEditor.getValue();
+      var script_content = scriptEditor.getValue();
+      var template_content = templateEditor.getValue();
+      var style_content = cssEditor.getValue();
+      var url_matches = match_content.split("\n");
+      var project_info = {
+        url_matches: url_matches,
+        script: compressScript(script_content),
+        template: compressTemplate(template_content),
+        style: compressCss(style_content)
+      };
+      $('#sc-scrape-project-fork').addClass('hidden');
+      $('#sc-scrape-project-fork-loading').removeClass('hidden');
+      addProjectAjax(project_info, function(err, res) {
+        if (err) {
+          $('#sc-scrape-project-fork-loading').addClass('hidden');
+          $('#sc-scrape-project-fork').removeClass('hidden');
+        } else {
+          console.log(res);
+          setTimeout(function() {
+            $('#sc-scrape-project-fork-loading').addClass('hidden');
+            window.location.href = '/projects/' + res.project_id;
+          }, 2000);
+        }
+      });
     });
 
     $('#sc-scrape-job-save').on('click', function(e) {
@@ -687,64 +752,79 @@ function compressCss(css_content) {
       switchTab('results');
     });
 
+    var scrapeLink = function(link, callback) {
+      $('#sc-result-error').addClass('hidden');
+      $('#sc-scrape-async-loading').removeClass('hidden');
+      $('#sc-main-content').addClass('hidden');
+      switchTab('results');
+      $('#sc-page-content').html('');
+      scrapeLinkAjax(link, function(err, result) {
+        $('#sc-scrape-async-loading').addClass('hidden');
+        $('#sc-main-content').removeClass('hidden');
+        if (err) {
+          $('#sc-result-error-content').html('Error: ' + err);
+          $('#sc-result-error').removeClass('hidden');
+        }
+        if (!err && result) {
+          if (result.error) {
+            $('#sc-result-error-content').html('Error: ' + result.error);
+            $('#sc-result-error').removeClass('hidden');
+          }
+          if (result.page) {
+            window.history.pushState({}, result.page.title + ' - Scraper', 
+              '/scraper?link=' + encodeURIComponent(result.page.url));
+            $('#sc-scrape-json').attr('href', '/scrape?link=' + encodeURIComponent(result.page.url));
+            $('#sc-input-link').val(result.page.url);
+            // Page info
+            $('#sc-page-title').html(result.page.title);
+            $('#sc-page-title').attr('href', result.page.url);
+            $('#sc-page-description').html(shortenDescriptionIfNecessary(result.page.description,800));
+            $('#sc-page-image').attr('src', '');
+            $('#sc-page-image').attr('src', result.page.image);
+            $('#sc-page-url').html(getLinkText(result.page.url,80));
+            $('#sc-page-url').attr('href', result.page.url);
+            // Page content
+            $('#sc-page-css').html(result.page.css);
+            $('#sc-page-content').html(result.page.html);
+            $('#sc-page-content').removeClass('hidden');
+          }
+          if (result.job) {
+            $('#sc-scrape-job').attr('data-job-id', result.job.id);
+            if (result.job.url_matches.length == 0 && result.page) {
+              var hostname = getLinkHostname(result.page.url);
+              if (hostname != '') result.job.url_matches.push(hostname);
+            }
+            matchEditor.getDoc().setValue(result.job.url_matches.join('\n'));
+            scriptEditor.getDoc().setValue(result.job.script);
+            templateEditor.getDoc().setValue(result.job.template);
+            var css_content = css_beautify(result.job.style);
+            cssEditor.getDoc().setValue(css_content);
+          }
+        }
+        if (callback) callback(err, result);
+      });
+    }
+
     $('#sc-input-form').submit(function(e) {
+      e.preventDefault();
       var link = $('#sc-input-link').val();
-      if (!link || link === '') {
-        e.preventDefault();
-      } else if (!isValidURL(link)) {
+      if (!link || link === '') return;
+      if (!isValidURL(link)) {
         link = 'http://' + link;
         $('#sc-input-link').val(link);
       }
+      scrapeLink(link);
     });
 
     $('#sc-scrape-async').on('click', function(e) {
       e.preventDefault();
       var link = $('#sc-input-link').val();
-      if (link && link != '') {
-        if (!isValidURL(link)) {
-          link = 'http://' + link;
-          $('#sc-input-link').val(link);
-        }
-        $('#sc-scrape-async-loading').removeClass('hidden');
-        $('#sc-main-content').addClass('hidden');
-        switchTab('results');
-        scrapeLinkAjax(link, function(err, result) {
-          $('#sc-scrape-async-loading').addClass('hidden');
-          $('#sc-main-content').removeClass('hidden');
-          if (!err && result) {
-            console.log(result);
-            if (result.page) {              
-              window.history.pushState({}, result.page.title + ' - Scraper', 
-                '/scraper?link=' + encodeURIComponent(result.page.url));
-              $('#sc-scrape-json').attr('href', '/scrape?link=' + encodeURIComponent(result.page.url));
-              $('#sc-input-link').val(result.page.url);
-              // Page info
-              $('#sc-page-title').html(result.page.title);
-              $('#sc-page-title').attr('href', result.page.url);
-              $('#sc-page-description').html(shortenDescriptionIfNecessary(result.page.description,800));
-              $('#sc-page-image').attr('src', '');
-              $('#sc-page-image').attr('src', result.page.image);
-              $('#sc-page-url').html(getLinkText(result.page.url,80));
-              $('#sc-page-url').attr('href', result.page.url);
-              // Page content
-              $('#sc-page-content').html(result.page.html);
-              $('#sc-page-css').html(result.page.css);
-            }
-            if (result.job) {
-              $('#sc-scrape-job').attr('data-job-id', result.job.id);
-              if (result.job.url_matches.length == 0 && result.page) {
-                var hostname = getLinkHostname(result.page.url);
-                if (hostname != '') result.job.url_matches.push(hostname);
-              }
-              matchEditor.getDoc().setValue(result.job.url_matches.join('\n'));
-              scriptEditor.getDoc().setValue(result.job.script);
-              templateEditor.getDoc().setValue(result.job.template);
-              var css_content = css_beautify(result.job.style);
-              cssEditor.getDoc().setValue(css_content);
-            }
-          }
-        });
+      if (!link || link === '') return;
+      if (!isValidURL(link)) {
+        link = 'http://' + link;
+        $('#sc-input-link').val(link);
       }
+      scrapeLink(link);
     });
   });
   </script>

@@ -186,9 +186,9 @@ supported_websites.sort(function(a, b){
 <%  for (var i = 0; i < top_projects.length; i++) {%>
 <%    var project = top_projects[i];%>
           <li class="sc-project-item" data-project-id="<%=project._id%>">
-            <h5 class="sc-project-item-title"><a href="/projects/<%=project._id%>"><%=project.name%></a></h5>
+            <h5 class="sc-project-item-title"><a href="/projects/<%=project._id%>"><%=(project.name || 'No name')%></a></h5>
             <div style="overflow:hidden;">
-              <p class="sc-project-item-description"><%=project.description%></p>
+              <p class="sc-project-item-description"><%=(project.description || 'No description')%></p>
               <p class="sc-project-item-timestamp">
                 <span><i class="fa fa-clock-o fa-fw"></i> Created at: </span>
                 <span class="date-time" data-date-time="<%=project.created_at.toISOString()%>"><%=project.created_at.toISOString()%></span>
@@ -281,9 +281,9 @@ supported_websites.sort(function(a, b){
   function renderProjectItem(project) {
     var project_item_html = '' +
     '<li class="sc-project-item" data-project-id="' + project._id + '">' +
-      '<h5 class="sc-project-item-title"><a href="/projects/' + project._id + '">' + project.name + '</a></h5>' +
+      '<h5 class="sc-project-item-title"><a href="/projects/' + project._id + '">' + (project.name || 'No name') + '</a></h5>' +
       '<div style="overflow:hidden;">' +
-        '<p class="sc-project-item-description">' + project.description + '</p>' +
+        '<p class="sc-project-item-description">' + (project.description || 'No description') + '</p>' +
         '<p class="sc-project-item-timestamp">' +
           '<span><i class="fa fa-clock-o fa-fw"></i> Created at: </span>' +
           '<span class="date-time" data-date-time="' + project.created_at + '">' + project.created_at + '</span>' +

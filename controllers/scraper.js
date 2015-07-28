@@ -50,13 +50,15 @@ exports.showScraperPage = function(req, res) {
       if(err){
         console.log(err);
         return res.render('scraper-view.ejs', {
+          error: err,
           user: req.user,
-          page: { url: req.query.link },
-          job: {},
+          page: (result) ? result.page : { url: req.query.link },
+          job: (result) ? result.job : {},
           urlutil: urlutil
         });
       }
       return res.render('scraper-view.ejs', {
+        error: null,
         user: req.user,
         page: result.page,
         job: result.job,
@@ -67,34 +69,39 @@ exports.showScraperPage = function(req, res) {
 }
 
 function requestWithEncoding(options, callback) {
-  var req = request.get(options);
+  try {
+    var req = request.get(options);
 
-  req.on('response', function(res) {
-    var chunks = [];
-    res.on('data', function(chunk) {
-      chunks.push(chunk);
+    req.on('response', function(res) {
+      var chunks = [];
+      res.on('data', function(chunk) {
+        chunks.push(chunk);
+      });
+
+      res.on('end', function() {
+        var buffer = Buffer.concat(chunks);
+        var encoding = res.headers['content-encoding'];
+        if (encoding == 'gzip') {
+          zlib.gunzip(buffer, function(err, decoded) {
+            callback(err, res, decoded && decoded.toString());
+          });
+        } else if (encoding == 'deflate') {
+          zlib.inflate(buffer, function(err, decoded) {
+            callback(err, res, decoded && decoded.toString());
+          })
+        } else {
+          callback(null, res, buffer.toString());
+        }
+      });
     });
 
-    res.on('end', function() {
-      var buffer = Buffer.concat(chunks);
-      var encoding = res.headers['content-encoding'];
-      if (encoding == 'gzip') {
-        zlib.gunzip(buffer, function(err, decoded) {
-          callback(err, res, decoded && decoded.toString());
-        });
-      } else if (encoding == 'deflate') {
-        zlib.inflate(buffer, function(err, decoded) {
-          callback(err, res, decoded && decoded.toString());
-        })
-      } else {
-        callback(null, res, buffer.toString());
-      }
+    req.on('error', function(err) {
+      callback(err);
     });
-  });
-
-  req.on('error', function(err) {
-    callback(err);
-  });
+  } catch(e) {
+    console.log(e);
+    callback(e);
+  }
 }
 
 function readScriptFileSync(script_file) {
@@ -209,7 +216,6 @@ function scrapeInternal(options, callback) {
             // console.log(job);
 
           } else if (!options.no_default || options.no_default !== 'yes') {
-            // job.script = '<%postProcess();%>';
             job.script = '' +
               'if ($(\'article\').length) {\n' +
               '  $(\'article script\').remove();\n' +
@@ -248,7 +254,11 @@ function scrapeInternal(options, callback) {
             });
           } catch (e) {
             console.log(e);
-            return callback(e);
+            return callback(e, {
+              request_url: options.url,
+              page: page,
+              job: job
+            });
           }
 
           // console.log('Result (HTML):');
@@ -299,7 +309,7 @@ exports.showScraper2Page = function(req, res) {
           link_html: null,
           cheerio: cheerio,
           urlutil: urlutil,
-          rootPath: configPath.rootPath
+          readScriptFileSync: readScriptFileSync
         });
       }
       
@@ -316,7 +326,7 @@ exports.showScraper2Page = function(req, res) {
           link_html: '',
           cheerio: cheerio,
           urlutil: urlutil,
-          rootPath: configPath.rootPath
+          readScriptFileSync: readScriptFileSync
         });
       }
 
@@ -329,7 +339,7 @@ exports.showScraper2Page = function(req, res) {
         link_html: html,
         cheerio: cheerio,
         urlutil: urlutil,
-        rootPath: configPath.rootPath
+        readScriptFileSync: readScriptFileSync
       });
     }
   );

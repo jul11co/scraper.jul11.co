@@ -3,8 +3,10 @@ function getLinkHostname(url) {
   if (!url) return '';
   var url_obj = urlutil.parse(url);
   var url_hostname = (url_obj) ? url_obj.hostname : '';
-  url_hostname = url_hostname.replace(/(www.)/gm, '');
-  return url_hostname;
+  if (url_hostname) {
+    url_hostname = url_hostname.replace(/(www.)/gm, '');
+  }
+  return (url_hostname || '');
 }
 function getLinkText(url, max_length) {
   var url_short = url;
@@ -72,12 +74,13 @@ function compressCss(css_content) {
   .CodeMirror {
     border: 1px solid #eee;
     height: auto;
-  }  
+  }
   .sc-result-error {
     background-color: white;
     padding: 0;
     box-shadow: 0 1px 2px rgba(43,59,93,0.29);
     border-radius: 5px;
+    margin-bottom: 20px;
   }
   .sc-result-error blockquote {
     margin: 0;
@@ -287,6 +290,10 @@ function compressCss(css_content) {
 
         <div style="height: 50px;padding: 10px;">
           <div style="float: right;">
+            <a id="sc-scrape-project-fork" class="btn btn-default btn-sm" href="#">Fork this project</a>
+            <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
             <a id="sc-scrape-project-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
             <a id="sc-scrape-project-save" class="btn btn-warning btn-sm" href="#">Save all</a>
             <div id="sc-scrape-project-save-loading" class="loader-inline hidden">
@@ -367,6 +374,20 @@ function compressCss(css_content) {
       url: '/scrape?project=' + project_id + '&link=' + encodeURIComponent(link),
       type: 'get',
       dataType : 'json'
+    }).success(function (res){
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
+  }
+  function addProjectAjax(project_info, callback) {
+    console.log('Add project');
+    console.log(project_info);
+    $.ajax({
+      url: '/projects/add',
+      type: 'post',
+      data: project_info
     }).success(function (res){
       callback(null, res);
     }).error (function (err){
@@ -470,6 +491,35 @@ function compressCss(css_content) {
     $('#sc-scrape-tab-project').click(function(e) {
       e.preventDefault();
       switchTab('project');
+    });
+
+    $('#sc-scrape-project-fork').on('click', function(e) {
+      e.preventDefault();
+      var match_content = matchEditor.getValue();
+      var script_content = scriptEditor.getValue();
+      var template_content = templateEditor.getValue();
+      var style_content = cssEditor.getValue();
+      var url_matches = match_content.split("\n");
+      var project_info = {
+        url_matches: url_matches,
+        script: compressScript(script_content),
+        template: compressTemplate(template_content),
+        style: compressCss(style_content)
+      };
+      $('#sc-scrape-project-fork').addClass('hidden');
+      $('#sc-scrape-project-fork-loading').removeClass('hidden');
+      addProjectAjax(project_info, function(err, res) {
+        if (err) {
+          $('#sc-scrape-project-fork-loading').addClass('hidden');
+          $('#sc-scrape-project-fork').removeClass('hidden');
+        } else {
+          console.log(res);
+          setTimeout(function() {
+            $('#sc-scrape-project-fork-loading').addClass('hidden');
+            window.location.href = '/projects/' + res.project_id;
+          }, 2000);
+        }
+      });
     });
 
     $('#sc-scrape-project-save').on('click', function(e) {

@@ -16,7 +16,7 @@ module.exports = function(app) {
   // SCRAPER
 
   app.get('/scraper', Scraper.showScraperPage);
-  app.get('/scraper2', Scraper.showScraper2Page);
+  // app.get('/scraper2', Scraper.showScraper2Page);
   app.get('/scrape', Scraper.scrape);
   app.post('/scrape/test', Scraper.scrapeTest);
 

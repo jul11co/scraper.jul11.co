@@ -116,7 +116,7 @@ exports.getProjectsInternal = function(user, options, callback) {
 exports.addProject = function(req, res) {
   console.log('Add project');
   var project_info = {
-    name: req.body.name,
+    name: (req.body.name || ''),
     description: (req.body.description || ''),
     url_matches: (req.body.url_matches || []),
     script: (req.body.script || ''),
@@ -191,7 +191,7 @@ exports.updateProject = function(req, res) {
         }
       });
     }
-    
+
     var update_data = {
       last_update: new Date()
     };    

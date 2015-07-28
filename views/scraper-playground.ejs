@@ -31,6 +31,7 @@
     padding: 0;
     box-shadow: 0 1px 2px rgba(43,59,93,0.29);
     border-radius: 5px;
+    margin-bottom: 20px;
   }
   .sc-result-error blockquote {
     margin: 0;
@@ -167,10 +168,22 @@
         <!-- CSS Editor -->
         <div class="sc-code-editor-header">
           <h3>Style <small><a href="http://www.w3schools.com/css/" target="_blank">CSS</a></small> <small>(=page.css)</small></h3>
+          <div style="float:right;">
+            <a id="sc-scrape-css-apply" class="btn btn-default btn-sm" href="#">Apply</a>
+          </div>
         </div>
         <div>
           <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
             rows="1" class="sc-code-editor"></textarea>
+        </div>
+
+        <div style="height: 50px;padding: 10px;">
+          <div style="float: right;">
+            <a id="sc-scrape-project-fork" class="btn btn-default btn-sm" href="#">Save to new project</a>
+            <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
+              <img src="/svg/loader.svg" />
+            </div>
+          </div>
         </div>
 
       </div>
@@ -239,6 +252,20 @@
     script_content = script_content.replace(/(<\%|\%>)/gm, '');
     // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
     return script_content;
+  }
+  function addProjectAjax(project_info, callback) {
+    console.log('Add project');
+    console.log(project_info);
+    $.ajax({
+      url: '/projects/add',
+      type: 'post',
+      data: project_info
+    }).success(function (res){
+      callback(null, res);
+    }).error (function (err){
+      console.log(err);
+      callback(err);
+    });
   }
   function scrapeLinkTestAjax(project_info, link, callback) {
     console.log('Scrape test: ' + link);
@@ -336,6 +363,12 @@
       $('#sc-page-css').html(css_content);
     }
 
+    $('#sc-scrape-css-apply').on('click', function(e){
+      e.preventDefault();
+      applyCss();
+      switchTab('results');
+    });
+
     $('#sc-scrape-tab-results').click(function(e) {
       e.preventDefault();
       switchTab('results');
@@ -350,6 +383,35 @@
       e.preventDefault();
       applyCss();
       switchTab('results');
+    });
+
+    $('#sc-scrape-project-fork').on('click', function(e) {
+      e.preventDefault();
+      var match_content = matchEditor.getValue();
+      var script_content = scriptEditor.getValue();
+      var template_content = templateEditor.getValue();
+      var style_content = cssEditor.getValue();
+      var url_matches = match_content.split("\n");
+      var project_info = {
+        url_matches: url_matches,
+        script: compressScript(script_content),
+        template: compressTemplate(template_content),
+        style: compressCss(style_content)
+      };
+      $('#sc-scrape-project-fork').addClass('hidden');
+      $('#sc-scrape-project-fork-loading').removeClass('hidden');
+      addProjectAjax(project_info, function(err, res) {
+        if (err) {
+          $('#sc-scrape-project-fork-loading').addClass('hidden');
+          $('#sc-scrape-project-fork').removeClass('hidden');
+        } else {
+          console.log(res);
+          setTimeout(function() {
+            $('#sc-scrape-project-fork-loading').addClass('hidden');
+            window.location.href = '/projects/' + res.project_id;
+          }, 2000);
+        }
+      });
     });
 
     var scrapeLinkTest = function(link, callback) {
@@ -406,13 +468,11 @@
 
     $('#sc-input-form').submit(function(e) {
       var link = $('#sc-input-link').val();
-      if (!link || link === '') {
-        e.preventDefault();
-      } else if (!isValidURL(link)) {
+      if (!link || link === '') return;
+      if (!isValidURL(link)) {
         link = 'http://' + link;
         $('#sc-input-link').val(link);
       }
-      e.preventDefault();
       scrapeLinkTest(link);
     });
 

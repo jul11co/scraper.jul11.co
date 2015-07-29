@@ -13,9 +13,22 @@
   <link rel="stylesheet" href="/codemirror-5.5/theme/monokai.css">
 
   <style type="text/css">
+  html {
+    overflow-y: auto;
+  }
   .navbar {
     background-color: #9F2274;
     min-height: 40px;
+  }
+  .footer {
+    height: 45px;
+  }
+  .footer > .container .text-muted {
+    font-size: 10px;
+  }
+  .footer > .container {
+    margin-top: 5px;
+    margin-bottom: 5px;
   }
   #sc-main-container {
     padding-top: 10px;
@@ -56,6 +69,53 @@
   .sc-code-editor {
     box-shadow: 0 1px 2px rgba(43,59,93,0.29);
   }
+
+  @media only screen and (min-width : 1170px) {  
+    #sc-main-container {
+      display: flex;
+      overflow: hidden;
+      height: 100vh;
+      margin-top: -45px;
+      padding-top: 45px;
+      position: relative;
+      width: 100%;
+      backface-visibility: hidden;
+      will-change: overflow;
+    }
+    .sc-left-pane,
+    .sc-right-pane {
+      overflow: auto;
+      height: auto;
+      padding: .5rem;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: none;
+      padding-top: 20px;
+      overflow-y: scroll;
+    }
+    .sc-left-pane {
+      float: left;
+      width: 50%;
+      border-right: 1px solid #ccc;
+    }
+    .sc-right-pane {
+      float: right;
+      width: 50%;
+    }
+    #sc-tabs {
+      display: none;
+    }
+    #sc-scrape-project {
+      padding-top: 50px;
+    }
+  }
+  @media only screen and (max-width : 1170px) {
+    #sc-tabs {
+      display: block;
+    }
+    #sc-scrape-project {
+      padding-top: 20px;
+    }
+  }
   </style>
 
   <style id="sc-page-css" type="text/css"></style>
@@ -71,8 +131,9 @@
   <a id="back-to-top" href="#" class="btn btn-dark btn-lg toggle"><i class="fa fa-chevron-up"></i></a>
   
   <!-- Begin page content -->
-  <div id="sc-main-container" class="container">
-    <div class="row">
+  <div id="sc-main-container">
+
+    <div class="sc-left-pane">
 
       <div class="col-md-12">
         <h1 class="sc-icon-title"><a href="/">Playground</a></h1>
@@ -93,96 +154,119 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <div id="sc-main-content" class="row hidden">
+      <div id="sc-main-content">
 
-      <div class="col-md-12" style="margin-top: 20px;margin-bottom: 15px">
-        <div class="btn-group">
-          <a id="sc-scrape-tab-project" href="#" class="btn btn-info btn-sm">Project</a>
-          <a id="sc-scrape-tab-results" href="#" class="btn btn-default btn-sm">Results</a>
-        </div>
-      </div>
-
-      <!-- Scrape Results -->
-      <div id="sc-scrape-results" class="col-md-12 hidden">
-
-        <div id="sc-page-info" class="sc-page-info hidden">
-          <div class="sc-page-header" style="padding-top: 0;">
-            <p class="sc-page-link-hostname"><!-- Page hostname --></p>
-            <h4 class="sc-page-title-wrapper">
-              <a id="sc-page-title" href="" target="blank"><!-- Page title --></a>
-            </h4>
-            <div style="overflow:hidden;">
-              <div class="sc-page-image-wrapper">
-                <img id="sc-page-image" src=""/>
-              </div>
-              <h5 style="margin: 0;line-height: 1.6;">
-                <span id="sc-page-description"><!-- Page description --></span>
-              </h5>
-              <p class="sc-page-url">
-                <i class="fa fa-link"></i> <a id="sc-page-url" href="" target="_blank"><!-- Page URL --></a>
-              </p>
-            </div>
+        <div id="sc-tabs" class="col-md-12" style="margin-top: 20px;margin-bottom: 15px;text-align: center;">
+          <div class="btn-group">
+            <a id="sc-scrape-tab-project" href="#" class="btn btn-info btn-sm">Project</a>
+            <a id="sc-scrape-tab-results" href="#" class="btn btn-default btn-sm">Results</a>
           </div>
         </div>
 
-        <div id="sc-result-error" class="sc-result-error hidden">
-          <blockquote id="sc-result-error-content"></blockquote>
+        <!-- Scrape Results -->
+        <div id="sc-scrape-results" class="col-md-12" style="margin-top: 20px;">
+
+          <div id="sc-page-info" class="sc-page-info hidden">
+            <div class="sc-page-header" style="padding-top: 0;">
+              <p class="sc-page-link-hostname"><!-- Page hostname --></p>
+              <h4 class="sc-page-title-wrapper">
+                <a id="sc-page-title" href="" target="blank"><!-- Page title --></a>
+              </h4>
+              <div style="overflow:hidden;">
+                <div class="sc-page-image-wrapper">
+                  <img id="sc-page-image" src=""/>
+                </div>
+                <h5 style="margin: 0;line-height: 1.6;">
+                  <span id="sc-page-description"><!-- Page description --></span>
+                </h5>
+                <p class="sc-page-url">
+                  <i class="fa fa-link"></i> <a id="sc-page-url" href="" target="_blank"><!-- Page URL --></a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div id="sc-result-error" class="sc-result-error hidden">
+            <blockquote id="sc-result-error-content"></blockquote>
+          </div>
+
+          <div id="sc-page-content" class="sc-page-content hidden"><!-- Page content --></div>
+
         </div>
+      </div><!-- sc-main-content -->
 
-        <div id="sc-page-content" class="sc-page-content hidden"><!-- Page content --></div>
+    </div><!-- sc-left-pane -->
 
-      </div>
-
+    <div class="sc-right-pane">    
+        
       <!-- Scrape Project -->
-      <div id="sc-scrape-project" class="col-md-12 hidden" data-project-id="playground">
+      <div id="sc-scrape-project" class="hidden" data-project-id="playground">
 
-        <!-- Match Editor -->
-        <div class="sc-code-editor-header">
-          <h3>URL Matches</h3>
+        <div style="padding-bottom: 50px;">
+          <div class="col-md-6 col-sm-6 col-xs-6" style="margin-bottom: 15px;">
+            <div class="btn-group">
+              <a id="sc-scrape-tab-project-script" href="#" class="btn btn-info btn-sm" data-scrape-tab="script">Script</a>
+              <a id="sc-scrape-tab-project-template" href="#" class="btn btn-default btn-sm" data-scrape-tab="template">Template</a>
+              <a id="sc-scrape-tab-project-style" href="#" class="btn btn-default btn-sm" data-scrape-tab="style">Style</a>
+              <!-- <a id="sc-scrape-tab-project-match" href="#" class="btn btn-default btn-sm" data-scrape-tab="match">URL Matches</a> -->
+            </div>
+          </div>
+
+          <div class="col-md-6 col-sm-6 col-xs-6" style="margin-bottom: 15px;">
+            <div style="float: right;">
+              <a id="sc-scrape-project-fork" class="btn btn-primary btn-sm" href="#">Save to new project</a>
+              <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
+                <img src="/svg/loader.svg" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <textarea id="sc-scrape-match-editor" name="content" placeholder=" Enter script here" 
-            rows="1" class="sc-code-editor"></textarea>
+      
+        <!-- Match Editor -->
+        <div id="sc-scrape-match" class="col-md-12 scrape-tab hidden" data-tab-id="match">
+          <div class="sc-code-editor-header">
+            <h3>URL Matches</h3>
+          </div>
+          <div>
+            <textarea id="sc-scrape-match-editor" name="content" placeholder=" Enter script here" 
+              rows="1" class="sc-code-editor"></textarea>
+          </div>
         </div>
 
         <!-- Script Editor -->
-        <div class="sc-code-editor-header">
-          <h3>Script <small><a href="https://nodejs.org" target="_blank">NodeJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
-        </div>
-        <div>
-          <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
-            rows="1" class="sc-code-editor"></textarea>
+        <div id="sc-scrape-script" class="col-md-12 scrape-tab" data-tab-id="script">
+          <div class="sc-code-editor-header">
+            <h3>Script <small><a href="https://nodejs.org" target="_blank">NodeJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
+          </div>
+          <div>
+            <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
+              rows="1" class="sc-code-editor"></textarea>
+          </div>
         </div>
 
         <!-- Template Editor -->
-        <div class="sc-code-editor-header">
-          <h3>Template <small><a href="http://ejs.co/" target="_blank">EJS</a></small> <small>(=page.html)</small></h3>
-        </div>
-        <div>
-          <textarea id="sc-scrape-template-editor" name="content" placeholder=" Enter template here" 
-            rows="1" class="sc-code-editor"></textarea>
+        <div id="sc-scrape-template" class="col-md-12 scrape-tab hidden" data-tab-id="template">
+          <div class="sc-code-editor-header">
+            <h3>Template <small><a href="http://ejs.co/" target="_blank">EJS</a></small> <small>(=page.html)</small></h3>
+          </div>
+          <div>
+            <textarea id="sc-scrape-template-editor" name="content" placeholder=" Enter template here" 
+              rows="1" class="sc-code-editor"></textarea>
+          </div>
         </div>
 
         <!-- CSS Editor -->
-        <div class="sc-code-editor-header">
-          <h3>Style <small><a href="http://www.w3schools.com/css/" target="_blank">CSS</a></small> <small>(=page.css)</small></h3>
-          <div style="float:right;">
-            <a id="sc-scrape-css-apply" class="btn btn-default btn-sm" href="#">Apply</a>
-          </div>
-        </div>
-        <div>
-          <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
-            rows="1" class="sc-code-editor"></textarea>
-        </div>
-
-        <div style="height: 50px;padding: 10px;">
-          <div style="float: right;">
-            <a id="sc-scrape-project-fork" class="btn btn-default btn-sm" href="#">Save to new project</a>
-            <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
-              <img src="/svg/loader.svg" />
+        <div id="sc-scrape-style" class="col-md-12 scrape-tab hidden" data-tab-id="style">
+          <div class="sc-code-editor-header">
+            <h3>Style <small><a href="http://www.w3schools.com/css/" target="_blank">CSS</a></small> <small>(=page.css)</small></h3>
+            <div style="float:right;">
+              <a id="sc-scrape-css-apply" class="btn btn-default btn-sm" href="#">Apply</a>
             </div>
+          </div>
+          <div>
+            <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
+              rows="1" class="sc-code-editor"></textarea>
           </div>
         </div>
 
@@ -205,10 +289,10 @@
   <script src="/codemirror-5.5/mode/css/css.js" type="text/javascript"></script>
   <script src="/codemirror-5.5/mode/javascript/javascript.js" type="text/javascript"></script>
   <script src="/codemirror-5.5/mode/htmlmixed/htmlmixed.js" type="text/javascript"></script>
-  <script src="/codemirror-5.5/addon/edit/matchbrackets.js" type="text/javascript"></script>
-  <script src="/codemirror-5.5/addon/comment/continuecomment.js" type="text/javascript"></script>
-  <script src="/codemirror-5.5/addon/comment/comment.js" type="text/javascript"></script>
-  <script src="/codemirror-5.5/addon/selection/selection-pointer.js" type="text/javascript"></script>
+  <!-- // <script src="/codemirror-5.5/addon/edit/matchbrackets.js" type="text/javascript"></script> -->
+  <!-- // <script src="/codemirror-5.5/addon/comment/continuecomment.js" type="text/javascript"></script> -->
+  <!-- // <script src="/codemirror-5.5/addon/comment/comment.js" type="text/javascript"></script> -->
+  <!-- // <script src="/codemirror-5.5/addon/selection/selection-pointer.js" type="text/javascript"></script> -->
   <!-- JSBeaufity -->
   <script src="/js-beautify-1.5.10/js/lib/beautify.js" type="text/javascript"></script>
   <script src="/js-beautify-1.5.10/js/lib/beautify-css.js" type="text/javascript"></script>
@@ -339,16 +423,33 @@
       continueComments: "Enter"
     });
 
+    $(window).resize(function() {
+      var window_width = $(window).width() 
+      if (window_width >= 1170) {
+        $('#sc-scrape-results').removeClass('hidden');
+        $('#sc-scrape-project').removeClass('hidden');
+      }
+    });
+
     var switchTab = function(tab) {
+      var window_width = $(window).width();
       if (tab == 'results') {
         $('#sc-scrape-tab-results').removeClass('btn-default').addClass('btn-info');
         $('#sc-scrape-tab-project').removeClass('btn-info').addClass('btn-default');
         $('#sc-scrape-results').removeClass('hidden');
-        $('#sc-scrape-project').addClass('hidden');
+        if (window_width < 1170) {
+          $('#sc-scrape-project').addClass('hidden');
+        } else {
+          $('#sc-scrape-project').removeClass('hidden');
+        }
       } else if (tab == 'project') {
         $('#sc-scrape-tab-results').removeClass('btn-info').addClass('btn-default');
         $('#sc-scrape-tab-project').removeClass('btn-default').addClass('btn-info');
-        $('#sc-scrape-results').addClass('hidden');
+        if (window_width < 1170) {
+          $('#sc-scrape-results').addClass('hidden');
+        } else {
+          $('#sc-scrape-results').removeClass('hidden');
+        }
         $('#sc-scrape-project').removeClass('hidden');
         matchEditor.refresh();
         scriptEditor.refresh();
@@ -356,6 +457,23 @@
         cssEditor.refresh();
       }
     }
+
+    $('a[data-scrape-tab]').on('click', function(e) {
+      e.preventDefault();
+      var data_tab = $(this).attr('data-scrape-tab');
+      $('a[data-scrape-tab]').each(function() {
+        $(this).removeClass('btn-info').addClass('btn-default');
+      });
+      $(this).removeClass('btn-default').addClass('btn-info');
+      $('.scrape-tab').each(function() {
+        var tab_id = $(this).attr('data-tab-id');
+        if (tab_id === data_tab) {
+          $(this).removeClass('hidden');
+        } else {
+          $(this).addClass('hidden');
+        }
+      });
+    });
 
     var applyCss = function() {
       var css_content = cssEditor.getValue();
@@ -467,6 +585,7 @@
     }
 
     $('#sc-input-form').submit(function(e) {
+      e.preventDefault();
       var link = $('#sc-input-link').val();
       if (!link || link === '') return;
       if (!isValidURL(link)) {

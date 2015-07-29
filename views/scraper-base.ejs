@@ -27,31 +27,25 @@ var fixLinks = function(_selector, options) {
         return;
       }
       var link_url = link_href;
-      link_url = link_url.replace('http:///', '/');
-      link_url = link_url.replace('http://', '/');
-      link_url = link_url.replace('http:/', '/');
-      link_url = link_url.replace('https:///', '/');
-      link_url = link_url.replace('https://', '/');
-      link_url = link_url.replace('https:/', '/');
+      if (link_url.indexOf('//') == 0) {
+        link_url = page_host_url_obj.protocol + link_url;
+      }
       var link_url_obj = urlutil.parse(link_url);
       if (!link_url_obj.host) {
         link_url = urlutil.resolve(page_host_url_obj, link_url_obj);
         // $(this).attr('href', link_url);
       } else {
-       link_url = urlutil.format(link_url_obj);
+        link_url = urlutil.format(link_url_obj);
       }
-      $(this).attr('href', link_url);
+      if (override_url) {
+        $(this).attr('href', override_url + encodeURIComponent(link_url));
+      } else {
+        $(this).attr('href', link_url);
+      }
     }
   });
 }
 var normalizeLinks = function(_selector, options) {
-  var page_host_url = '';
-  if (options && options.host_url && options.host_url !== '') {
-    page_host_url = options.host_url;
-  } else {
-    page_host_url = urlGetHost(page.url);
-  }
-  var page_host_url_obj = urlutil.parse(page_host_url);
   var excludes = [];
   if (options && options.excludes && Array.isArray(options.excludes)) {
     for (var i = 0; i < options.excludes.length; i++) {
@@ -77,28 +71,10 @@ var normalizeLinks = function(_selector, options) {
         if (excluded) return;
       }
       var link_url = link_href;
-      var link_url_obj = urlutil.parse(link_url);
-      if (!link_url_obj.host) {
-        link_url = link_url.replace('http:///', '/');
-        link_url = link_url.replace('http://', '/');
-        link_url = link_url.replace('http:/', '/');
-        link_url = link_url.replace('https:///', '/');
-        link_url = link_url.replace('https://', '/');
-        link_url = link_url.replace('https:/', '/');
-        // console.log('Empty host: ' + link_url);
-        link_url = urlutil.resolve(page_host_url_obj, link_url_obj);
-        if (!override_url || override_url == '') {
-          $(this).attr('href', link_url);
-        }
-      } else {
-        link_url = urlutil.format(link_url_obj);
-      }
-      if (override_url) {
-        $(this).attr('href', override_url + encodeURIComponent(link_url));
-      } else if (options && options.override_url) {
+      if (options && options.override_url) {
         $(this).attr('href', options.override_url + encodeURIComponent(link_url));
       }
-      page.links.push(link_url);
+      // page.links.push(link_url);
     }
   });
 }

@@ -596,7 +596,7 @@ pre {
 .sc-page-item-image-wrapper {
   padding: 5px 0;
 }
-@media (min-height: 768px) {
+@media only screen and (min-width : 768px) {
   .sc-page-item-image-wrapper {
     float: left;
     padding: 5px 10px 5px 0;
@@ -695,7 +695,7 @@ pre {
 .sc-page-image-wrapper {
   padding: 5px 0;
 }
-@media (min-height: 768px) {
+@media only screen and (min-width : 768px) {
   .sc-page-image-wrapper {
     float: left;
     padding: 5px 10px 5px 0;

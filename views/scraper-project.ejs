@@ -55,16 +55,29 @@ function compressCss(css_content) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/favicon.ico">
 
-  <title><%=project.name%> - Scraper</title>
+  <title><%=(project.name || project._id)%> - Scraper</title>
 
   <% include styles %>
   <link rel="stylesheet" href="/codemirror-5.5/lib/codemirror.css">
   <link rel="stylesheet" href="/codemirror-5.5/theme/monokai.css">
 
   <style type="text/css">
+  html {
+    overflow-y: auto;
+  }
   .navbar {
     background-color: #9F2274;
     min-height: 40px;
+  }
+  .footer {
+    height: 45px;
+  }
+  .footer > .container {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  .footer > .container .text-muted {
+    font-size: 10px;
   }
   #sc-main-container {
     padding-top: 10px;
@@ -105,6 +118,53 @@ function compressCss(css_content) {
   .sc-code-editor {
     box-shadow: 0 1px 2px rgba(43,59,93,0.29);
   }
+
+  @media only screen and (min-width : 1170px) {  
+    #sc-main-container {
+      display: flex;
+      overflow: hidden;
+      height: 100vh;
+      margin-top: -45px;
+      padding-top: 45px;
+      position: relative;
+      width: 100%;
+      backface-visibility: hidden;
+      will-change: overflow;
+    }
+    .sc-left-pane,
+    .sc-right-pane {
+      overflow: auto;
+      height: auto;
+      padding: .5rem;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: none;
+      padding-top: 20px;
+      overflow-y: scroll;
+    }
+    .sc-left-pane {
+      float: left;
+      width: 50%;
+      border-right: 1px solid #ccc;
+    }
+    .sc-right-pane {
+      float: right;
+      width: 50%;
+    }
+    #sc-tabs {
+      display: none;
+    }
+    #sc-scrape-project {
+      padding-top: 35px;
+    }
+  }
+  @media only screen and (max-width : 1170px) {
+    #sc-tabs {
+      display: block;
+    }
+    #sc-scrape-project {
+      padding-top: 20px;
+    }
+  }
   </style>
 
   <style id="sc-page-css" type="text/css">
@@ -124,8 +184,9 @@ function compressCss(css_content) {
   <a id="back-to-top" href="#" class="btn btn-dark btn-lg toggle"><i class="fa fa-chevron-up"></i></a>
   
   <!-- Begin page content -->
-  <div id="sc-main-container" class="container">
-    <div class="row">
+  <div id="sc-main-container">
+    
+    <div class="sc-left-pane">
 
       <div class="col-md-12">
         <h1 class="sc-icon-title"><a href="/">Scraper</a></h1>
@@ -150,161 +211,185 @@ function compressCss(css_content) {
           </div>
         </div>
       </div>
-    </div>
 
-    <div id="sc-main-content" class="row hidden">
+      <div id="sc-main-content">
 
-      <div class="col-md-12" style="margin-top: 20px;margin-bottom: 15px">
-        <div class="btn-group">
-          <a id="sc-scrape-tab-project" href="#" class="btn btn-info btn-sm">Project</a>
-          <a id="sc-scrape-tab-results" href="#" class="btn btn-default btn-sm">Results</a>
+        <div id="sc-tabs" class="col-md-12" style="margin-top: 20px;margin-bottom: 15px;text-align: center;">
+          <div class="btn-group">
+            <a id="sc-scrape-tab-results" href="#" class="btn btn-default btn-sm">Results</a>
+            <a id="sc-scrape-tab-project" href="#" class="btn btn-info btn-sm">Project</a>
+          </div>
         </div>
-      </div>
 
-      <!-- Scrape Results -->
-      <div id="sc-scrape-results" class="col-md-12 hidden">
-
-        <div id="sc-page-info" class="sc-page-info hidden">
-          <div class="sc-page-header" style="padding-top: 0;">
-            <p class="sc-page-link-hostname"><!-- Page hostname --></p>
-            <h4 class="sc-page-title-wrapper">
-              <a id="sc-page-title" href="" target="blank"><!-- Page title --></a>
-            </h4>
-            <div style="overflow:hidden;">
-              <div class="sc-page-image-wrapper">
-                <img id="sc-page-image" src=""/>
+        <!-- Scrape Results -->
+        <div id="sc-scrape-results" class="col-md-12" style="margin-top: 20px;">
+          <div id="sc-page-info" class="sc-page-info hidden">
+            <div class="sc-page-header" style="padding-top: 0;">
+              <p class="sc-page-link-hostname"><!-- Page hostname --></p>
+              <h4 class="sc-page-title-wrapper">
+                <a id="sc-page-title" href="" target="blank"><!-- Page title --></a>
+              </h4>
+              <div style="overflow:hidden;">
+                <div class="sc-page-image-wrapper">
+                  <img id="sc-page-image" src=""/>
+                </div>
+                <h5 style="margin: 0;line-height: 1.6;">
+                  <span id="sc-page-description"><!-- Page description --></span>
+                </h5>
+                <p class="sc-page-url">
+                  <i class="fa fa-link"></i> <a id="sc-page-url" href="" target="_blank"><!-- Page URL --></a>
+                </p>
               </div>
-              <h5 style="margin: 0;line-height: 1.6;">
-                <span id="sc-page-description"><!-- Page description --></span>
-              </h5>
-              <p class="sc-page-url">
-                <i class="fa fa-link"></i> <a id="sc-page-url" href="" target="_blank"><!-- Page URL --></a>
-              </p>
             </div>
           </div>
+
+          <div id="sc-result-error" class="sc-result-error hidden">
+            <blockquote id="sc-result-error-content"></blockquote>
+          </div>
+
+          <div id="sc-page-content" class="sc-page-content hidden"><!-- Page content --></div>
+
         </div>
+      </div><!-- sc-main-content -->
 
-        <div id="sc-result-error" class="sc-result-error hidden">
-          <blockquote id="sc-result-error-content"></blockquote>
-        </div>
+    </div><!-- sc-left-pane -->
 
-        <div id="sc-page-content" class="sc-page-content hidden"><!-- Page content --></div>
-
-      </div>
-
+    <div class="sc-right-pane">    
+        
       <!-- Scrape Project -->
-      <div id="sc-scrape-project" class="col-md-12 hidden" data-project-id="<%if(project._id){%><%=project._id%><%}%>">
+      <div id="sc-scrape-project" class="hidden" data-project-id="<%if(project._id){%><%=project._id%><%}%>">
 
-        <div style="margin-top: 10px; margin-bottom: 20px;padding: 10px;border-radius: 5px;background-color: white;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
-          <h4 style="margin: 5px 0;font-size: 16px;color: #666"><span style="font-weight: bold;">ID:</span> <%=project._id%></h4>
-          <h4 style="margin: 5px 0;font-size: 16px;color: #666">
-            <span style="font-weight: bold;">Name:</span> <span id="sc-scrape-project-name"><%=project.name%></span> <a id="sc-scrape-project-name-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
-            <div id="sc-scrape-project-name-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
-              <input id="sc-scrape-project-name-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
-                value="<%=project.name%>"
-              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
-              <span class="input-group-btn">
-                <a id="sc-scrape-project-name-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
-                <a id="sc-scrape-project-name-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
-              </span>
-            </div>
-          </h4>
-          <h4 style="margin: 5px 0;font-size: 16px;color: #666">
-            <span style="font-weight: bold;">Description:</span> <span id="sc-scrape-project-description"><%=project.description%></span> <a id="sc-scrape-project-description-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
-            <div id="sc-scrape-project-description-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
-              <input id="sc-scrape-project-description-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
-                value="<%=project.description%>"
-              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
-              <span class="input-group-btn">
-                <a id="sc-scrape-project-description-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
-                <a id="sc-scrape-project-description-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
-              </span>
-            </div>
-          </h4>
+        <div class="col-md-12">
+          <div style="margin-top: 10px; margin-bottom: 20px;padding: 10px;border-radius: 5px;background-color: white;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+            <h4 style="margin: 5px 0;font-size: 16px;color: #666"><span style="font-weight: bold;">ID:</span> <%=project._id%></h4>
+            <h4 style="margin: 5px 0;font-size: 16px;color: #666">
+              <span style="font-weight: bold;">Name:</span> <span id="sc-scrape-project-name"><%=project.name%></span> <a id="sc-scrape-project-name-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
+              <div id="sc-scrape-project-name-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
+                <input id="sc-scrape-project-name-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
+                  value="<%=project.name%>"
+                style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+                <span class="input-group-btn">
+                  <a id="sc-scrape-project-name-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
+                  <a id="sc-scrape-project-name-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
+                </span>
+              </div>
+            </h4>
+            <h4 style="margin: 5px 0;font-size: 16px;color: #666">
+              <span style="font-weight: bold;">Description:</span> <span id="sc-scrape-project-description"><%=project.description%></span> <a id="sc-scrape-project-description-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
+              <div id="sc-scrape-project-description-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
+                <input id="sc-scrape-project-description-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
+                  value="<%=project.description%>"
+                style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+                <span class="input-group-btn">
+                  <a id="sc-scrape-project-description-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
+                  <a id="sc-scrape-project-description-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
+                </span>
+              </div>
+            </h4>
+          </div>
         </div>
 
-        <!-- Match Editor -->
-        <div class="sc-code-editor-header">
-          <h3>URL Matches</h3>
-          <div style="float:right;">
-            <a id="sc-scrape-match-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
-            <a id="sc-scrape-match-save" class="btn btn-default btn-sm" href="#">Save</a>
-            <div id="sc-scrape-match-save-loading" class="loader-inline hidden">
-              <img src="/svg/loader.svg" />
+        <div style="padding-bottom: 50px;">
+          <div class="col-md-6 col-sm-6 col-xs-6" style="margin-bottom: 15px;">
+            <div class="btn-group">
+              <a id="sc-scrape-tab-project-script" href="#" class="btn btn-info btn-sm" data-scrape-tab="script">Script</a>
+              <a id="sc-scrape-tab-project-template" href="#" class="btn btn-default btn-sm" data-scrape-tab="template">Template</a>
+              <a id="sc-scrape-tab-project-style" href="#" class="btn btn-default btn-sm" data-scrape-tab="style">Style</a>
+              <!-- <a id="sc-scrape-tab-job-match" href="#" class="btn btn-default btn-sm" data-scrape-tab="match">URL Matches</a> -->
+            </div>
+          </div>
+
+          <div class="col-md-6 col-sm-6 col-xs-6" style="margin-bottom: 15px;">
+            <div style="float: right;">
+              <a id="sc-scrape-project-fork" class="btn btn-primary btn-sm" href="#">Fork <span class="hidden-xs">this project</span></a>
+              <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
+                <img src="/svg/loader.svg" />
+              </div>
+              <a id="sc-scrape-project-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+              <a id="sc-scrape-project-save" class="btn btn-warning btn-sm" href="#">Save all</a>
+              <div id="sc-scrape-project-save-loading" class="loader-inline hidden">
+                <img src="/svg/loader.svg" />
+              </div>
             </div>
           </div>
         </div>
-        <div>
-          <textarea id="sc-scrape-match-editor" name="content" placeholder=" Enter script here" 
-            rows="1" class="sc-code-editor"><%=project.url_matches.join('\n')%></textarea>
+      
+        <!-- Match Editor -->
+        <div id="sc-scrape-match" class="col-md-12 scrape-tab hidden" data-tab-id="match">
+          <div class="sc-code-editor-header">
+            <h3>URL Matches</h3>
+            <div style="float:right;">
+              <a id="sc-scrape-match-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+              <a id="sc-scrape-match-save" class="btn btn-default btn-sm" href="#">Save</a>
+              <div id="sc-scrape-match-save-loading" class="loader-inline hidden">
+                <img src="/svg/loader.svg" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <textarea id="sc-scrape-match-editor" name="content" placeholder=" Enter script here" 
+              rows="1" class="sc-code-editor"><%=project.url_matches.join('\n')%></textarea>
+          </div>
         </div>
 
         <!-- Script Editor -->
-        <div class="sc-code-editor-header">
-          <h3>Script <small><a href="https://nodejs.org" target="_blank">NodeJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
-          <div style="float:right;">
-            <a id="sc-scrape-script-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
-            <a id="sc-scrape-script-save" class="btn btn-default btn-sm" href="#">Save</a>
-            <div id="sc-scrape-script-save-loading" class="loader-inline hidden">
-              <img src="/svg/loader.svg" />
+        <div id="sc-scrape-script" class="col-md-12 scrape-tab" data-tab-id="script">
+          <div class="sc-code-editor-header">
+            <h3>Script <small><a href="https://nodejs.org" target="_blank">NodeJS</a> - <a href="http://cheeriojs.github.io/cheerio/" target="_blank">Cheerio</a></small></h3>
+            <div style="float:right;">
+              <a id="sc-scrape-script-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+              <a id="sc-scrape-script-save" class="btn btn-default btn-sm" href="#">Save</a>
+              <div id="sc-scrape-script-save-loading" class="loader-inline hidden">
+                <img src="/svg/loader.svg" />
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
-            rows="1" class="sc-code-editor"><%if(project.script){%><%=project.script%><%}%></textarea>
+          <div>
+            <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
+              rows="1" class="sc-code-editor"><%if(project.script){%><%=project.script%><%}%></textarea>
+          </div>
         </div>
 
         <!-- Template Editor -->
-        <div class="sc-code-editor-header">
-          <h3>Template <small><a href="http://ejs.co/" target="_blank">EJS</a></small> <small>(=page.html)</small></h3>
-          <div style="float:right;">
-            <a id="sc-scrape-template-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
-            <a id="sc-scrape-template-save" class="btn btn-default btn-sm" href="#">Save</a>
-            <div id="sc-scrape-template-save-loading" class="loader-inline hidden">
-              <img src="/svg/loader.svg" />
+        <div id="sc-scrape-template" class="col-md-12 scrape-tab hidden" data-tab-id="template">
+          <div class="sc-code-editor-header">
+            <h3>Template <small><a href="http://ejs.co/" target="_blank">EJS</a></small> <small>(=page.html)</small></h3>
+            <div style="float:right;">
+              <a id="sc-scrape-template-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+              <a id="sc-scrape-template-save" class="btn btn-default btn-sm" href="#">Save</a>
+              <div id="sc-scrape-template-save-loading" class="loader-inline hidden">
+                <img src="/svg/loader.svg" />
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <textarea id="sc-scrape-template-editor" name="content" placeholder=" Enter template here" 
-            rows="1" class="sc-code-editor"><%if(project.template){%><%=project.template%><%}%></textarea>
+          <div>
+            <textarea id="sc-scrape-template-editor" name="content" placeholder=" Enter template here" 
+              rows="1" class="sc-code-editor"><%if(project.template){%><%=project.template%><%}%></textarea>
+          </div>
         </div>
 
         <!-- CSS Editor -->
-        <div class="sc-code-editor-header">
-          <h3>Style <small><a href="http://www.w3schools.com/css/" target="_blank">CSS</a></small> <small>(=page.css)</small></h3>
-          <div style="float:right;">
-            <a id="sc-scrape-css-apply" class="btn btn-default btn-sm" href="#">Apply</a>
-            <a id="sc-scrape-css-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
-            <a id="sc-scrape-css-save" class="btn btn-default btn-sm" href="#">Save</a>
-            <div id="sc-scrape-css-save-loading" class="loader-inline hidden">
-              <img src="/svg/loader.svg" />
+        <div id="sc-scrape-style" class="col-md-12 scrape-tab hidden" data-tab-id="style">
+          <div class="sc-code-editor-header">
+            <h3>Style <small><a href="http://www.w3schools.com/css/" target="_blank">CSS</a></small> <small>(=page.css)</small></h3>
+            <div style="float:right;">
+              <a id="sc-scrape-css-apply" class="btn btn-default btn-sm" href="#">Apply</a>
+              <a id="sc-scrape-css-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+              <a id="sc-scrape-css-save" class="btn btn-default btn-sm" href="#">Save</a>
+              <div id="sc-scrape-css-save-loading" class="loader-inline hidden">
+                <img src="/svg/loader.svg" />
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
-            rows="1" class="sc-code-editor"><%if(project.style){%><%=project.style%><%}%></textarea>
-        </div>
-
-        <div style="height: 50px;padding: 10px;">
-          <div style="float: right;">
-            <a id="sc-scrape-project-fork" class="btn btn-default btn-sm" href="#">Fork this project</a>
-            <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
-              <img src="/svg/loader.svg" />
-            </div>
-            <a id="sc-scrape-project-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
-            <a id="sc-scrape-project-save" class="btn btn-warning btn-sm" href="#">Save all</a>
-            <div id="sc-scrape-project-save-loading" class="loader-inline hidden">
-              <img src="/svg/loader.svg" />
-            </div>
+          <div>
+            <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
+              rows="1" class="sc-code-editor"><%if(project.style){%><%=project.style%><%}%></textarea>
           </div>
         </div>
 
       </div>
 
-    </div>
+    </div><!-- sc-right-pane -->
   </div>
 
   <footer class="footer">
@@ -459,16 +544,33 @@ function compressCss(css_content) {
       continueComments: "Enter"
     });
 
+    $(window).resize(function() {
+      var window_width = $(window).width() 
+      if (window_width >= 1170) {
+        $('#sc-scrape-results').removeClass('hidden');
+        $('#sc-scrape-project').removeClass('hidden');
+      }
+    });
+
     var switchTab = function(tab) {
+      var window_width = $(window).width();
       if (tab == 'results') {
         $('#sc-scrape-tab-results').removeClass('btn-default').addClass('btn-info');
         $('#sc-scrape-tab-project').removeClass('btn-info').addClass('btn-default');
         $('#sc-scrape-results').removeClass('hidden');
-        $('#sc-scrape-project').addClass('hidden');
+        if (window_width < 1170) {
+          $('#sc-scrape-project').addClass('hidden');
+        } else {
+          $('#sc-scrape-project').removeClass('hidden');
+        }
       } else if (tab == 'project') {
         $('#sc-scrape-tab-results').removeClass('btn-info').addClass('btn-default');
         $('#sc-scrape-tab-project').removeClass('btn-default').addClass('btn-info');
-        $('#sc-scrape-results').addClass('hidden');
+        if (window_width < 1170) {
+          $('#sc-scrape-results').addClass('hidden');
+        } else {
+          $('#sc-scrape-project').addClass('hidden');
+        }
         $('#sc-scrape-project').removeClass('hidden');
         matchEditor.refresh();
         scriptEditor.refresh();
@@ -476,6 +578,27 @@ function compressCss(css_content) {
         cssEditor.refresh();
       }
     }
+
+    $('a[data-scrape-tab]').on('click', function(e) {
+      e.preventDefault();
+      var data_tab = $(this).attr('data-scrape-tab');
+      $('a[data-scrape-tab]').each(function() {
+        $(this).removeClass('btn-info').addClass('btn-default');
+      });
+      $(this).removeClass('btn-default').addClass('btn-info');
+      $('.scrape-tab').each(function() {
+        var tab_id = $(this).attr('data-tab-id');
+        if (tab_id === data_tab) {
+          $(this).removeClass('hidden');
+        } else {
+          $(this).addClass('hidden');
+        }
+      });
+      matchEditor.refresh();
+      scriptEditor.refresh();
+      templateEditor.refresh();
+      cssEditor.refresh();
+    });
 
     var applyCss = function() {
       var css_content = cssEditor.getValue();

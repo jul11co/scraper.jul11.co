@@ -55,11 +55,7 @@ function compressCss(css_content) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/favicon.ico">
 
-<%if (page.title) {%>
-  <title><%=page.title%> - Scraper</title>
-<%} else {%>
-  <title><%=page.url%> - Scraper</title>
-<%}%>
+  <title><%=project.name%> - Scraper</title>
 
   <% include styles %>
   <link rel="stylesheet" href="/codemirror-5.5/lib/codemirror.css">
@@ -112,8 +108,8 @@ function compressCss(css_content) {
   </style>
 
   <style id="sc-page-css" type="text/css">
-<%if (page.css && page.css != '') {%>
-  <%- compressCss(page.css) %>
+<%if (project.style && project.style != '') {%>
+  <%- compressCss(project.style) %>
 <%}%>
   </style>
 
@@ -133,17 +129,17 @@ function compressCss(css_content) {
 
       <div class="col-md-12">
         <h1 class="sc-icon-title"><a href="/">Scraper</a></h1>
-        <form id="sc-input-form" style="display: inline" action="/scraper" method="get">
+        <form id="sc-input-form" style="display: inline" action="/projects/<%=project._id%>" method="get">
           <div class="input-group" style="margin-top: 10px;margin-bottom: 10px;">
             <input id="sc-input-link" name="link" type="text" class="form-control" placeholder="Enter link here..."
               style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);"
-              value="<%=page.url%>">
+              value="<%=(link || '')%>">
             <span class="input-group-btn">
               <a id="sc-scrape-async" class="btn btn-primary" href="#"
                 style="margin-left: 10px;"><i class="fa fa-play"></i></a>
-              <a id="sc-scrape-alt" class="btn btn-primary hidden" href="/scraper2?link=<%=encodeURIComponent(page.url)%>"
+              <a id="sc-scrape-alt" class="btn btn-primary hidden" href=""
                 style="margin-left: 10px;">Alt</a>
-              <a id="sc-scrape-json" class="btn btn-success" href="/scrape?link=<%=encodeURIComponent(page.url)%>" target="_blank"
+              <a id="sc-scrape-json" class="btn btn-success disabled" href="#" target="_blank"
                 style="margin-left: 10px;">JSON</a>
             </span>
           </div><!-- /input-group -->
@@ -156,65 +152,77 @@ function compressCss(css_content) {
       </div>
     </div>
 
-    <div id="sc-main-content" class="row">
+    <div id="sc-main-content" class="row hidden">
 
       <div class="col-md-12" style="margin-top: 20px;margin-bottom: 15px">
         <div class="btn-group">
-          <a id="sc-scrape-tab-results" href="#" class="btn btn-info btn-sm">Results</a>
-          <a id="sc-scrape-tab-job" href="#" class="btn btn-default btn-sm">Scrape</a>
+          <a id="sc-scrape-tab-project" href="#" class="btn btn-info btn-sm">Project</a>
+          <a id="sc-scrape-tab-results" href="#" class="btn btn-default btn-sm">Results</a>
         </div>
       </div>
 
       <!-- Scrape Results -->
-      <div id="sc-scrape-results" class="col-md-12">
+      <div id="sc-scrape-results" class="col-md-12 hidden">
 
-        <div class="sc-page-info">
+        <div id="sc-page-info" class="sc-page-info hidden">
           <div class="sc-page-header" style="padding-top: 0;">
-            <p class="sc-page-link-hostname"><%=getLinkHostname(page.url).toUpperCase()%></p>
-<%if (page.title && page.title != "") {%>
+            <p class="sc-page-link-hostname"><!-- Page hostname --></p>
             <h4 class="sc-page-title-wrapper">
-              <a id="sc-page-title" href="<%=page.url%>" target="blank"><%=page.title%></a>
+              <a id="sc-page-title" href="" target="blank"><!-- Page title --></a>
             </h4>
-<%}%>
             <div style="overflow:hidden;">
-<%if (page.image && page.image != "") {%>
               <div class="sc-page-image-wrapper">
-                <img id="sc-page-image" src="<%=page.image%>"/>
+                <img id="sc-page-image" src=""/>
               </div>
-<%}%>
-<%if (page.description && page.description != "") {%>
               <h5 style="margin: 0;line-height: 1.6;">
-                <span id="sc-page-description" ><%=shortenDescriptionIfNecessary(page.description,400)%></span>
+                <span id="sc-page-description"><!-- Page description --></span>
               </h5>
-<%}%>
               <p class="sc-page-url">
-                <i class="fa fa-link"></i> <a id="sc-page-url" href="<%=page.url%>" target="_blank"><%=getLinkText(page.url,80)%></a>
+                <i class="fa fa-link"></i> <a id="sc-page-url" href="" target="_blank"><!-- Page URL --></a>
               </p>
             </div>
           </div>
         </div>
 
-        <div id="sc-result-error" class="sc-result-error<%if(!error){%> hidden<%}%>">
-          <blockquote id="sc-result-error-content"><%if(error){%>Error: <%=error%><%}%></blockquote>
+        <div id="sc-result-error" class="sc-result-error hidden">
+          <blockquote id="sc-result-error-content"></blockquote>
         </div>
 
-        <div id="sc-page-content" class="sc-page-content">
-<%if (page.html && page.html != '') {%>
-          <%- page.html %>
-<%}%>
-        </div>
+        <div id="sc-page-content" class="sc-page-content hidden"><!-- Page content --></div>
+
       </div>
 
-      <!-- Scrape Job -->
-      <div id="sc-scrape-job" class="col-md-12 hidden" data-job-id="<%if(job.id){%><%=job.id%><%}%>">
+      <!-- Scrape Project -->
+      <div id="sc-scrape-project" class="col-md-12 hidden" data-project-id="<%if(project._id){%><%=project._id%><%}%>">
 
-<%
-  if (!job.url_matches || job.url_matches && job.url_matches.length == 0) {
-    job.url_matches = [];
-    var hostname = getLinkHostname(page.url);
-    if (hostname != '') job.url_matches.push(hostname);
-  }
-%>
+        <div style="margin-top: 10px; margin-bottom: 20px;padding: 10px;border-radius: 5px;background-color: white;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+          <h4 style="margin: 5px 0;font-size: 16px;color: #666"><span style="font-weight: bold;">ID:</span> <%=project._id%></h4>
+          <h4 style="margin: 5px 0;font-size: 16px;color: #666">
+            <span style="font-weight: bold;">Name:</span> <span id="sc-scrape-project-name"><%=project.name%></span> <a id="sc-scrape-project-name-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
+            <div id="sc-scrape-project-name-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
+              <input id="sc-scrape-project-name-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
+                value="<%=project.name%>"
+              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+              <span class="input-group-btn">
+                <a id="sc-scrape-project-name-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
+                <a id="sc-scrape-project-name-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
+              </span>
+            </div>
+          </h4>
+          <h4 style="margin: 5px 0;font-size: 16px;color: #666">
+            <span style="font-weight: bold;">Description:</span> <span id="sc-scrape-project-description"><%=project.description%></span> <a id="sc-scrape-project-description-edit" href="#"><i class="fa fa-pencil-square-o"></i></a>
+            <div id="sc-scrape-project-description-input-group" class="input-group hidden" style="margin-top: 10px;margin-bottom: 10px;width: 100%;">              
+              <input id="sc-scrape-project-description-input" name="description" type="text" class="form-control" placeholder="Enter description here..."
+                value="<%=project.description%>"
+              style="background-color: white;padding: 3px 15px;box-shadow: 0 1px 2px rgba(43,59,93,0.29);">
+              <span class="input-group-btn">
+                <a id="sc-scrape-project-description-submit" class="btn btn-warning btn-sm" style="margin-left: 10px;">Update</a>
+                <a id="sc-scrape-project-description-cancel" class="btn btn-default btn-sm" style="margin-left: 10px;">Cancel</a>
+              </span>
+            </div>
+          </h4>
+        </div>
+
         <!-- Match Editor -->
         <div class="sc-code-editor-header">
           <h3>URL Matches</h3>
@@ -228,7 +236,7 @@ function compressCss(css_content) {
         </div>
         <div>
           <textarea id="sc-scrape-match-editor" name="content" placeholder=" Enter script here" 
-            rows="50" class="sc-code-editor"><%=job.url_matches.join('\n')%></textarea>
+            rows="1" class="sc-code-editor"><%=project.url_matches.join('\n')%></textarea>
         </div>
 
         <!-- Script Editor -->
@@ -244,7 +252,7 @@ function compressCss(css_content) {
         </div>
         <div>
           <textarea id="sc-scrape-script-editor" name="content" placeholder=" Enter script here" 
-            rows="50" class="sc-code-editor"><%if(job.script){%><%=job.script%><%}%></textarea>
+            rows="1" class="sc-code-editor"><%if(project.script){%><%=project.script%><%}%></textarea>
         </div>
 
         <!-- Template Editor -->
@@ -260,7 +268,7 @@ function compressCss(css_content) {
         </div>
         <div>
           <textarea id="sc-scrape-template-editor" name="content" placeholder=" Enter template here" 
-            rows="50" class="sc-code-editor"><%if(job.template){%><%=job.template%><%}%></textarea>
+            rows="1" class="sc-code-editor"><%if(project.template){%><%=project.template%><%}%></textarea>
         </div>
 
         <!-- CSS Editor -->
@@ -277,7 +285,7 @@ function compressCss(css_content) {
         </div>
         <div>
           <textarea id="sc-scrape-css-editor" name="content" placeholder=" Enter stylesheet here" 
-            rows="50" class="sc-code-editor"><%if(job.style){%><%=job.style%><%}%></textarea>
+            rows="1" class="sc-code-editor"><%if(project.style){%><%=project.style%><%}%></textarea>
         </div>
 
         <div style="height: 50px;padding: 10px;">
@@ -286,9 +294,9 @@ function compressCss(css_content) {
             <div id="sc-scrape-project-fork-loading" class="loader-inline hidden">
               <img src="/svg/loader.svg" />
             </div>
-            <a id="sc-scrape-job-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
-            <a id="sc-scrape-job-save" class="btn btn-warning btn-sm" href="#">Save all</a>
-            <div id="sc-scrape-job-save-loading" class="loader-inline hidden">
+            <a id="sc-scrape-project-saved" class="btn btn-success btn-sm hidden" href="#">Saved!</a>
+            <a id="sc-scrape-project-save" class="btn btn-warning btn-sm" href="#">Save all</a>
+            <div id="sc-scrape-project-save-loading" class="loader-inline hidden">
               <img src="/svg/loader.svg" />
             </div>
           </div>
@@ -361,19 +369,18 @@ function compressCss(css_content) {
     // script_content = script_content.replace(/(\r\n|\n|\r)/gm, '');
     return script_content;
   }
-  function scrapeLinkAjax(link, callback) {
+  function scrapeLinkAjax(project_id, link, callback) {
     $.ajax({
-      url: '/scrape?link=' + encodeURIComponent(link),
+      url: '/scrape?project=' + project_id + '&link=' + encodeURIComponent(link),
       type: 'get',
       dataType : 'json'
     }).success(function (res){
-      console.log(res);
       callback(null, res);
     }).error (function (err){
       console.log(err);
       callback(err);
     });
-  }  
+  }
   function addProjectAjax(project_info, callback) {
     console.log('Add project');
     console.log(project_info);
@@ -388,31 +395,14 @@ function compressCss(css_content) {
       callback(err);
     });
   }
-  function addJobAjax(job_info, callback) {
+  function updateProjectAjax(project_info, callback) {
+    console.log(project_info);
     $.ajax({
-      url: '/jobs/add',
+      url: '/projects/update',
       type: 'post',
-      data: { 
-        url_matches: job_info.url_matches,
-        script: job_info.script,
-        template: job_info.template,
-        style: job_info.style
-      }
+      data: project_info
     }).success(function (res){
-      // console.log(res);
-      callback(null, res);
-    }).error (function (err){
-      console.log(err);
-      callback(err);
-    });
-  }
-  function updateJobAjax(job_info, callback) {
-    $.ajax({
-      url: '/jobs/update',
-      type: 'post',
-      data: job_info
-    }).success(function (res){
-      // console.log(res);
+      console.log(res);
       callback(null, res);
     }).error (function (err){
       console.log(err);
@@ -472,14 +462,18 @@ function compressCss(css_content) {
     var switchTab = function(tab) {
       if (tab == 'results') {
         $('#sc-scrape-tab-results').removeClass('btn-default').addClass('btn-info');
-        $('#sc-scrape-tab-job').removeClass('btn-info').addClass('btn-default');
+        $('#sc-scrape-tab-project').removeClass('btn-info').addClass('btn-default');
         $('#sc-scrape-results').removeClass('hidden');
-        $('#sc-scrape-job').addClass('hidden');
-      } else if (tab == 'job') {
+        $('#sc-scrape-project').addClass('hidden');
+      } else if (tab == 'project') {
         $('#sc-scrape-tab-results').removeClass('btn-info').addClass('btn-default');
-        $('#sc-scrape-tab-job').removeClass('btn-default').addClass('btn-info');
+        $('#sc-scrape-tab-project').removeClass('btn-default').addClass('btn-info');
         $('#sc-scrape-results').addClass('hidden');
-        $('#sc-scrape-job').removeClass('hidden');
+        $('#sc-scrape-project').removeClass('hidden');
+        matchEditor.refresh();
+        scriptEditor.refresh();
+        templateEditor.refresh();
+        cssEditor.refresh();
       }
     }
 
@@ -494,13 +488,9 @@ function compressCss(css_content) {
       switchTab('results');
     });
 
-    $('#sc-scrape-tab-job').click(function(e) {
+    $('#sc-scrape-tab-project').click(function(e) {
       e.preventDefault();
-      switchTab('job');
-      matchEditor.refresh();
-      scriptEditor.refresh();
-      templateEditor.refresh();
-      cssEditor.refresh();
+      switchTab('project');
     });
 
     $('#sc-scrape-project-fork').on('click', function(e) {
@@ -532,44 +522,30 @@ function compressCss(css_content) {
       });
     });
 
-    $('#sc-scrape-job-save').on('click', function(e) {
+    $('#sc-scrape-project-save').on('click', function(e) {
       e.preventDefault();
       var match_content = matchEditor.getValue();
       var script_content = scriptEditor.getValue();
       var template_content = templateEditor.getValue();
       var style_content = cssEditor.getValue();
       var url_matches = match_content.split("\n");
-      var job_info = {
+      var project_info = {
         url_matches: url_matches,
         script: compressScript(script_content),
         template: compressTemplate(template_content),
         style: compressCss(style_content)
       };
-      var job_id = $('#sc-scrape-job').attr('data-job-id');
-      if (job_id && job_id !== '') {
-        job_info.job_id = job_id;
-        $('#sc-scrape-job-saved').addClass('hidden');
-        $('#sc-scrape-job-save').addClass('hidden');
-        $('#sc-scrape-job-save-loading').removeClass('hidden');
-        updateJobAjax(job_info, function(err, res) {
-          $('#sc-scrape-job-save-loading').addClass('hidden');
-          $('#sc-scrape-job-save').removeClass('hidden');
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        project_info.project_id = project_id;
+        $('#sc-scrape-project-saved').addClass('hidden');
+        $('#sc-scrape-project-save').addClass('hidden');
+        $('#sc-scrape-project-save-loading').removeClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          $('#sc-scrape-project-save-loading').addClass('hidden');
+          $('#sc-scrape-project-save').removeClass('hidden');
           if (!err) {
-            $('#sc-scrape-job-saved').removeClass('hidden');
-          }
-        });
-      } else {
-        // Add new job
-        $('#sc-scrape-job-saved').addClass('hidden');
-        $('#sc-scrape-job-save').addClass('hidden');
-        $('#sc-scrape-job-save-loading').removeClass('hidden');
-        addJobAjax(job_info, function(err, res) {
-          $('#sc-scrape-job-save-loading').addClass('hidden');
-          $('#sc-scrape-job-save').removeClass('hidden');
-          if (!err) {
-            $('#sc-scrape-job-saved').removeClass('hidden');
-            console.log('New job ID: ' + res.job_id);
-            $('#sc-scrape-job').attr('data-job-id', res.job_id);
+            $('#sc-scrape-project-saved').removeClass('hidden');
           }
         });
       }
@@ -577,41 +553,22 @@ function compressCss(css_content) {
 
     $('#sc-scrape-match-save').on('click', function(e) {
       e.preventDefault();
-      var job_id = $('#sc-scrape-job').attr('data-job-id');
-      if (job_id && job_id !== '') {
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
         var match_content = matchEditor.getValue();
         var url_matches = match_content.split("\n");
-        var job_info = {
-          job_id: job_id,
+        var project_info = {
+          project_id: project_id,
           url_matches: url_matches
         };
         $('#sc-scrape-match-saved').addClass('hidden');
         $('#sc-scrape-match-save').addClass('hidden');
         $('#sc-scrape-match-save-loading').removeClass('hidden');
-        updateJobAjax(job_info, function(err, res) {
+        updateProjectAjax(project_info, function(err, res) {
           $('#sc-scrape-match-save-loading').addClass('hidden');
           $('#sc-scrape-match-save').removeClass('hidden');
           if (!err) {
             $('#sc-scrape-match-saved').removeClass('hidden');
-          }
-        });
-      } else {
-        var match_content = matchEditor.getValue();
-        var url_matches = match_content.split("\n");
-        var job_info = {
-          url_matches: url_matches
-        };
-        // Add new job
-        $('#sc-scrape-match-saved').addClass('hidden');
-        $('#sc-scrape-match-save').addClass('hidden');
-        $('#sc-scrape-match-save-loading').removeClass('hidden');
-        addJobAjax(job_info, function(err, res) {
-          $('#sc-scrape-match-save-loading').addClass('hidden');
-          $('#sc-scrape-match-save').removeClass('hidden');
-          if (!err) {
-            $('#sc-scrape-match-saved').removeClass('hidden');
-            console.log('New job ID: ' + res.job_id);
-            $('#sc-scrape-job').attr('data-job-id', res.job_id);
           }
         });
       }
@@ -619,42 +576,21 @@ function compressCss(css_content) {
 
     $('#sc-scrape-script-save').on('click', function(e) {
       e.preventDefault();
-      var job_id = $('#sc-scrape-job').attr('data-job-id');
-      if (job_id && job_id !== '') {
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
         var script_content = scriptEditor.getValue();
-        var job_info = {
-          job_id: job_id,
+        var project_info = {
+          project_id: project_id,
           script: compressScript(script_content)
         };
         $('#sc-scrape-script-saved').addClass('hidden');
         $('#sc-scrape-script-save').addClass('hidden');
         $('#sc-scrape-script-save-loading').removeClass('hidden');
-        updateJobAjax(job_info, function(err, res) {
+        updateProjectAjax(project_info, function(err, res) {
           $('#sc-scrape-script-save-loading').addClass('hidden');
           $('#sc-scrape-script-save').removeClass('hidden');
           if (!err) {
             $('#sc-scrape-script-saved').removeClass('hidden');
-          }
-        });
-      } else {
-        var match_content = matchEditor.getValue();
-        var url_matches = match_content.split("\n");
-        var script_content = scriptEditor.getValue();
-        var job_info = {
-          url_matches: url_matches,
-          script: compressScript(script_content)
-        };
-        // Add new job
-        $('#sc-scrape-script-saved').addClass('hidden');
-        $('#sc-scrape-script-save').addClass('hidden');
-        $('#sc-scrape-script-save-loading').removeClass('hidden');
-        addJobAjax(job_info, function(err, res) {
-          $('#sc-scrape-script-save-loading').addClass('hidden');
-          $('#sc-scrape-script-save').removeClass('hidden');
-          if (!err) {
-            $('#sc-scrape-script-saved').removeClass('hidden');
-            console.log('New job ID: ' + res.job_id);
-            $('#sc-scrape-job').attr('data-job-id', res.job_id);
           }
         });
       }
@@ -662,42 +598,21 @@ function compressCss(css_content) {
 
     $('#sc-scrape-template-save').on('click', function(e) {
       e.preventDefault();
-      var job_id = $('#sc-scrape-job').attr('data-job-id');
-      if (job_id && job_id !== '') {
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
         var template_content = templateEditor.getValue();
-        var job_info = {
-          job_id: job_id,
+        var project_info = {
+          project_id: project_id,
           template: compressTemplate(template_content)
         };
         $('#sc-scrape-template-saved').addClass('hidden');
         $('#sc-scrape-template-save').addClass('hidden');
         $('#sc-scrape-template-save-loading').removeClass('hidden');
-        updateJobAjax(job_info, function(err, res) {
+        updateProjectAjax(project_info, function(err, res) {
           $('#sc-scrape-template-save-loading').addClass('hidden');
           $('#sc-scrape-template-save').removeClass('hidden');
           if (!err) {
             $('#sc-scrape-template-saved').removeClass('hidden');
-          }
-        });
-      } else {
-        var match_content = matchEditor.getValue();
-        var url_matches = match_content.split("\n");
-        var template_content = templateEditor.getValue();
-        var job_info = {
-          url_matches: url_matches,
-          template: compressTemplate(template_content)
-        };
-        // Add new job
-        $('#sc-scrape-template-saved').addClass('hidden');
-        $('#sc-scrape-template-save').addClass('hidden');
-        $('#sc-scrape-template-save-loading').removeClass('hidden');
-        addJobAjax(job_info, function(err, res) {
-          $('#sc-scrape-template-save-loading').addClass('hidden');
-          $('#sc-scrape-template-save').removeClass('hidden');
-          if (!err) {
-            $('#sc-scrape-template-saved').removeClass('hidden');
-            console.log('New job ID: ' + res.job_id);
-            $('#sc-scrape-job').attr('data-job-id', res.job_id);
           }
         });
       }
@@ -705,42 +620,21 @@ function compressCss(css_content) {
 
     $('#sc-scrape-css-save').on('click', function(e) {
       e.preventDefault();
-      var job_id = $('#sc-scrape-job').attr('data-job-id');
-      if (job_id && job_id !== '') {
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
         var style_content = cssEditor.getValue();
-        var job_info = {
-          job_id: job_id,
+        var project_info = {
+          project_id: project_id,
           style: compressCss(style_content)
         };
         $('#sc-scrape-css-saved').addClass('hidden');
         $('#sc-scrape-css-save').addClass('hidden');
         $('#sc-scrape-css-save-loading').removeClass('hidden');
-        updateJobAjax(job_info, function(err, res) {
+        updateProjectAjax(project_info, function(err, res) {
           $('#sc-scrape-css-save-loading').addClass('hidden');
           $('#sc-scrape-css-save').removeClass('hidden');
           if (!err) {
             $('#sc-scrape-css-saved').removeClass('hidden');
-          }
-        });
-      } else {
-        var match_content = matchEditor.getValue();
-        var url_matches = match_content.split("\n");
-        var style_content = cssEditor.getValue();
-        var job_info = {
-          url_matches: url_matches,
-          style: compressCss(style_content)
-        };
-        // Add new job
-        $('#sc-scrape-css-saved').addClass('hidden');
-        $('#sc-scrape-css-save').addClass('hidden');
-        $('#sc-scrape-css-save-loading').removeClass('hidden');
-        addJobAjax(job_info, function(err, res) {
-          $('#sc-scrape-css-save-loading').addClass('hidden');
-          $('#sc-scrape-css-save').removeClass('hidden');
-          if (!err) {
-            $('#sc-scrape-css-saved').removeClass('hidden');
-            console.log('New job ID: ' + res.job_id);
-            $('#sc-scrape-job').attr('data-job-id', res.job_id);
           }
         });
       }
@@ -758,7 +652,8 @@ function compressCss(css_content) {
       $('#sc-main-content').addClass('hidden');
       switchTab('results');
       $('#sc-page-content').html('');
-      scrapeLinkAjax(link, function(err, result) {
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      scrapeLinkAjax(project_id, link, function(err, result) {
         $('#sc-scrape-async-loading').addClass('hidden');
         $('#sc-main-content').removeClass('hidden');
         if (err) {
@@ -766,14 +661,19 @@ function compressCss(css_content) {
           $('#sc-result-error').removeClass('hidden');
         }
         if (!err && result) {
+          console.log(result);
           if (result.error) {
             $('#sc-result-error-content').html('Error: ' + result.error);
             $('#sc-result-error').removeClass('hidden');
           }
           if (result.page) {
-            window.history.pushState({}, result.page.title + ' - Scraper', 
-              '/scraper?link=' + encodeURIComponent(result.page.url));
-            $('#sc-scrape-json').attr('href', '/scrape?link=' + encodeURIComponent(result.page.url));
+            // Update location bar
+            window.history.pushState({}, '<%=project._id%> - Scraper', 
+              '/projects/<%=project._id%>?link=' + encodeURIComponent(result.page.url));
+            // JSON button
+            $('#sc-scrape-json').attr('href', '/scrape?project=' + project_id + 
+              '&link=' + encodeURIComponent(result.page.url));
+            $('#sc-scrape-json').removeClass('disabled');
             $('#sc-input-link').val(result.page.url);
             // Page info
             $('#sc-page-title').html(result.page.title);
@@ -783,21 +683,18 @@ function compressCss(css_content) {
             $('#sc-page-image').attr('src', result.page.image);
             $('#sc-page-url').html(getLinkText(result.page.url,80));
             $('#sc-page-url').attr('href', result.page.url);
-            // Page content
+            $('#sc-page-info').removeClass('hidden');
+            // Page content & style
             $('#sc-page-css').html(result.page.css);
             $('#sc-page-content').html(result.page.html);
             $('#sc-page-content').removeClass('hidden');
           }
-          if (result.job) {
-            $('#sc-scrape-job').attr('data-job-id', result.job.id);
-            if (result.job.url_matches.length == 0 && result.page) {
-              var hostname = getLinkHostname(result.page.url);
-              if (hostname != '') result.job.url_matches.push(hostname);
-            }
-            matchEditor.getDoc().setValue(result.job.url_matches.join('\n'));
-            scriptEditor.getDoc().setValue(result.job.script);
-            templateEditor.getDoc().setValue(result.job.template);
-            var css_content = css_beautify(result.job.style);
+          if (result.project) {
+            $('#sc-scrape-project').attr('data-project-id', result.project.id);
+            matchEditor.getDoc().setValue(result.project.url_matches.join('\n'));
+            scriptEditor.getDoc().setValue(result.project.script);
+            templateEditor.getDoc().setValue(result.project.template);
+            var css_content = css_beautify(result.project.style);
             cssEditor.getDoc().setValue(css_content);
           }
         }
@@ -826,6 +723,77 @@ function compressCss(css_content) {
       }
       scrapeLink(link);
     });
+
+    $('#sc-scrape-project-name-edit').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-name-input-group').removeClass('hidden');
+    });
+
+    $('#sc-scrape-project-name-cancel').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-name-input-group').addClass('hidden');
+    });
+
+    $('#sc-scrape-project-name-submit').on('click', function(e) {
+      e.preventDefault();
+      var project_info = {};
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        project_info.project_id = project_id;
+        var project_name = $('#sc-scrape-project-name-input').val();
+        project_info.name = project_name;
+        $('#sc-scrape-project-name-input-group').addClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          if (err) {
+            $('#sc-scrape-project-name-input-group').removeClass('hidden');
+          } else {
+            $('#sc-scrape-project-name').html(project_name)
+          }
+        });
+      }
+    });
+
+    $('#sc-scrape-project-description-edit').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-description-input-group').removeClass('hidden');
+    });
+
+    $('#sc-scrape-project-description-cancel').on('click', function(e) {
+      e.preventDefault();
+      $('#sc-scrape-project-description-input-group').addClass('hidden');
+    });
+
+    $('#sc-scrape-project-description-submit').on('click', function(e) {
+      e.preventDefault();
+      var project_info = {};
+      var project_id = $('#sc-scrape-project').attr('data-project-id');
+      if (project_id && project_id !== '') {
+        project_info.project_id = project_id;
+        var project_description = $('#sc-scrape-project-description-input').val();
+        project_info.description = project_description;
+        $('#sc-scrape-project-description-input-group').addClass('hidden');
+        updateProjectAjax(project_info, function(err, res) {
+          if (err) {
+            $('#sc-scrape-project-description-input-group').removeClass('hidden');
+          } else {
+            $('#sc-scrape-project-description').html(project_description)
+          }
+        });
+      }
+    });
+
+    var link = $('#sc-input-link').val();
+    if (link && link !== '') {
+      if (!isValidURL(link)) {
+        link = 'http://' + link;
+        $('#sc-input-link').val(link);
+      }
+      switchTab('results');
+      scrapeLink(link);
+    } else {
+      $('#sc-main-content').removeClass('hidden');
+      switchTab('project');
+    }
   });
   </script>
 
